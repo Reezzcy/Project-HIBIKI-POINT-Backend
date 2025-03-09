@@ -11,14 +11,14 @@ const {
 const router = express.Router();
 
 // Create Task
-router.post('/Tasks', postTask);
+router.post('/tasks', postTask);
 // Get All Tasks
-router.get('/Tasks', getAllTasks);
+router.get('/tasks', getAllTasks);
 // Get Task by ID
-router.get('/Tasks/:id', getTaskById);
+router.get('/tasks/:id', getTaskById);
 // Update Task
-router.put('/Tasks/:id', updateTask);
+router.put('/tasks/:id', updateTask);
 // Delete Task
-router.delete('/Tasks/:id', deleteTask);
+router.delete('/tasks/:id', deleteTask);
 
 module.exports = router;

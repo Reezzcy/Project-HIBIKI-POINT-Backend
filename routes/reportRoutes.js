@@ -11,14 +11,14 @@ const {
 const router = express.Router();
 
 // Create Report
-router.post('/Reports', postReport);
+router.post('/reports', postReport);
 // Get All Reports
-router.get('/Reports', getAllReports);
+router.get('/reports', getAllReports);
 // Get Report by ID
-router.get('/Reports/:id', getReportById);
+router.get('/reports/:id', getReportById);
 // Update Report
-router.put('/Reports/:id', updateReport);
+router.put('/reports/:id', updateReport);
 // Delete Report
-router.delete('/Reports/:id', deleteReport);
+router.delete('/reports/:id', deleteReport);
 
 module.exports = router;
