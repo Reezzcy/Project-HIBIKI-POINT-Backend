@@ -2,7 +2,7 @@ const Campaign = require('../models/campaign');
 const User = require('../models/user');
 
 // Create Campaign
-const createCampaign = async (req, res) => {
+const postCampaign = async (req, res) => {
     try {
         const { user_id, title, description, budget, status, start_date, end_date } = req.body;
 
@@ -88,7 +88,7 @@ const deleteCampaign = async (req, res) => {
 };
 
 module.exports = { 
-    createCampaign, 
+    postCampaign, 
     getAllCampaigns, 
     getCampaignById, 
     updateCampaign, 
