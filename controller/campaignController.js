@@ -1,5 +1,4 @@
-const Campaign = require('../models/campaign');
-const User = require('../models/user');
+const { Campaign, User } = require('../models');
 
 // Create Campaign
 const postCampaign = async (req, res) => {
@@ -11,12 +10,39 @@ const postCampaign = async (req, res) => {
             return res.status(400).json({ message: "All fields are required!" });
         }
 
+        const user = await User.findByPk(user_id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found!" });
+        }
+
         // Buat campaign baru
         const newCampaign = await Campaign.create({ user_id, title, description, budget, status, start_date, end_date });
+        await user.addCampaign(newCampaign);
 
         res.status(201).json({ message: "Campaign created successfully!", campaign: newCampaign });
     } catch (error) {
         res.status(500).json({ message: "Error creating campaign", error: error.message });
+    }
+};
+
+// Add User to Campaign
+const addUserToCampaign = async (req, res) => {
+    try {
+        const { userId, campaignId } = req.body;
+
+        const user = await User.findByPk(userId);
+        const campaign = await Campaign.findByPk(campaignId);
+
+        if (!user || !campaign) {
+            return res.status(404).json({ message: "User or Campaign not found!" });
+        }
+
+        await user.addCampaign(campaign);
+        
+        res.status(200).json({ message: "User added to campaign successfully!" });
+    } catch (error) {
+        res.status(500).json({ message: "Error adding user to campaign", error: error.message });
     }
 };
 
@@ -38,7 +64,7 @@ const getCampaignById = async (req, res) => {
     try {
         const { id } = req.params;
         const campaign = await Campaign.findByPk(id, {
-            include: { model: User, attributes: ['name', 'email'] }
+            include: { model: User, as : 'users', attributes: ['name', 'email'], through: { attributes: [] } }
         });
 
         if (!campaign) {
@@ -87,10 +113,30 @@ const deleteCampaign = async (req, res) => {
     }
 };
 
+const removeUserFromCampaign = async (req, res) => {
+    try {
+        const { userId, campaignId } = req.body;
+
+        const user = await User.findByPk(userId);
+        const campaign = await Campaign.findByPk(campaignId);
+
+        if (!user || !campaign) {
+            return res.status(404).json({ message: "User or Campaign not found!" });
+        }
+
+        await user.removeCampaign(campaign);
+        res.status(200).json({ message: "User removed from campaign successfully!" });
+    } catch (error) {
+        res.status(500).json({ message: "Error removing user from campaign", error: error.message });
+    }
+};
+
 module.exports = { 
-    postCampaign, 
+    postCampaign,
+    addUserToCampaign, 
     getAllCampaigns, 
     getCampaignById, 
     updateCampaign, 
-    deleteCampaign 
+    deleteCampaign,
+    removeUserFromCampaign
 };

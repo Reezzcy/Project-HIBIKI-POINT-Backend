@@ -1,5 +1,4 @@
-const Report = require('../models/report');
-const Campaign = require('../models/campaign');
+const { Campaign, Report } = require('../models');
 
 // Create Report
 postReport = async (req, res) => {
