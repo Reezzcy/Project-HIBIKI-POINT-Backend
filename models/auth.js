@@ -23,7 +23,7 @@ const Auth = sequelize.define('Auth', {
             len: [6, 100]
         }
     },
-    userId: {
+    user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {

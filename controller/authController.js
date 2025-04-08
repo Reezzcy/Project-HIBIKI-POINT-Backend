@@ -1,12 +1,12 @@
 const { Auth, User } = require("../models");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const register = async (req, res, next) => {
     try {
         const { name, email, password } = req.body;
 
-        if (!username || !password) {
+        if (!name || !password) {
             return res.status(400).json({
                 status: "Error",
                 message: "Username and password are required",
@@ -16,7 +16,7 @@ const register = async (req, res, next) => {
             });
         }
 
-        const user = await Auth.findOne(email);
+        const user = await Auth.findOne({ where: { email } });
         if (user) {
             return res.status(400).json({
                 status: "Error",
@@ -36,7 +36,7 @@ const register = async (req, res, next) => {
         const newAuth = await Auth.create({
             email,
             password: hashedPassword,
-            userId: newUser.id,
+            user_id: newUser.user_id,
         });
 
         return res.status(201).json({
@@ -44,10 +44,9 @@ const register = async (req, res, next) => {
             message: "User created successfully",
             data: {
                 newUser,
-                id: newAuth.id,
+                id: newAuth.auth_id,
                 email: newAuth.email,
-                password: newAuth.password,
-                userId: newAuth.userId,
+                user_id: newAuth.user_id,
             },
             isError: false,
             isSuccess: true,
@@ -71,7 +70,8 @@ const login = async (req, res, next) => {
             });
         }
 
-        const auth = await Auth.findOne(email, {
+        const auth = await Auth.findOne({
+            where: { email },
             include: { model: User, as: "User", attributes: ["name"] }
         });
 
@@ -99,7 +99,7 @@ const login = async (req, res, next) => {
 
         const generateToken = jwt.sign(
             {
-                id: auth.userId,
+                id: auth.user_id,
                 email: auth.email,
             },
             process.env.JWT_SECRET,
@@ -112,9 +112,9 @@ const login = async (req, res, next) => {
             status: "Success",
             message: "User logged in successfully",
             data: {
-                id: auth.id,
+                id: auth.auth_id,
                 email: auth.email,
-                userId: auth.userId,
+                user_id: auth.user_id,
                 generateToken,
             },
             isError: false,

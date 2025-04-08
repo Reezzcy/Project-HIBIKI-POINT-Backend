@@ -6,8 +6,8 @@ const User = require('./user');
 const UserCampaign = require('./userCampaign');
 
 // One-to-One: Satu Akun hanya punya satu Auth
-User.hasOne(Auth, { foreignKey: { name: "userId", allowNull: false }, as: "Auth", onDelete: "CASCADE"});
-Auth.belongsTo(User, { foreignKey: { name: "userId", allowNull: false }, as: "User", onDelete: "CASCADE"});
+User.hasOne(Auth, { foreignKey: { name: "user_id", allowNull: false }, as: "Auth", onDelete: "CASCADE"});
+Auth.belongsTo(User, { foreignKey: { name: "user_id", allowNull: false }, as: "User", onDelete: "CASCADE"});
 
 // Many-to-Many: Satu Akun bisa punya banyak Campaign
 User.belongsToMany(Campaign, { through: UserCampaign, foreignKey: 'user_id', as: 'campaigns' });
