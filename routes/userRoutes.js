@@ -10,8 +10,8 @@ const {
 
 const router = express.Router();
 
-// Create User
-router.post('/users', postUser);
+// // Create User
+// router.post('/users', postUser);
 // Get All Users
 router.get('/users', getUsers);
 // Get User by ID
