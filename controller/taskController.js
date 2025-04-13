@@ -1,4 +1,4 @@
-const { Campaign, Task } = require('../models');
+const { Campaign, Task } = require('../database/models');
 
 // Create Task
 postTask = async (req, res) => {

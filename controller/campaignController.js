@@ -1,4 +1,4 @@
-const { Campaign, User } = require('../models');
+const { Campaign, User } = require('../database/models');
 
 // Create Campaign
 const postCampaign = async (req, res) => {
