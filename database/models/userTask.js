@@ -1,9 +1,9 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
 const User = require('./user');
-const Campaign = require('./campaign');
+const Task = require('./task');
 
-const UserCampaign = sequelize.define('UserCampaign', {
+const UserTask = sequelize.define('UserTask', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -16,16 +16,16 @@ const UserCampaign = sequelize.define('UserCampaign', {
             key: 'user_id'
         }
     },
-    campaign_id: {
+    task_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: Campaign,
-            key: 'campaign_id'
+            model: Task,
+            key: 'task_id'
         }
     }
 }, {
-    tableName: 'user_campaign',
+    tableName: 'user_task',
     timestamps: false
 });
 
-module.exports = UserCampaign;
+module.exports = UserTask;

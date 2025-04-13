@@ -9,12 +9,7 @@ const redis = new Redis({
 })
 
 // Cek koneksi
-redis.on('connect', () => {
-    console.log('Connected to Redis');
-});
-
-redis.on('error', (err) => {
-    console.log('Redis Error', err);
-});
+redis.on('connect', () => console.log('Redis connected'));
+redis.on('error', err => console.error('Redis error:', err));
 
 module.exports = redis;

@@ -30,8 +30,9 @@ const Campaign = sequelize.define('Campaign', {
         allowNull: false
     },
     status: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: DataTypes.ENUM(["Draft", "Published", "Completed"]),
+        allowNull: false,
+        defaultValue: "Draft"
     },
     start_date: {
         type: DataTypes.DATEONLY,

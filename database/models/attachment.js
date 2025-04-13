@@ -1,10 +1,11 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
 const Campaign = require('./campaign');
+const Task = require('./task');
 const User = require('./user');
 
-const Task = sequelize.define('Task', {
-    task_id: {
+const Attachment = sequelize.define('Attachment', {
+    attachment_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
@@ -17,38 +18,29 @@ const Task = sequelize.define('Task', {
             key: 'campaign_id'
         }
     },
-    title: {
-        type: DataTypes.STRING,
-        allowNull: false,
+    task_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: Task,
+            key: 'task_id'
+        }
     },
-    description: {
-        type: DataTypes.STRING,
-        allowNull: false
+    file: {
+        type: DataTypes.TEXT('long'),
+        allowNull: true
     },
-    assigned_to: {
+    uploaded_by: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: User,
             key: 'user_id'
         }
-    },
-    priority: {
-        type: DataTypes.ENUM(["Low", "Medium", "High"]),
-        allowNull: false,
-        defaultValue: "Low"
-    },
-    status: {
-        type: DataTypes.ENUM(["Todo", "In Progress", "Done"]),
-        allowNull: false
-    },
-    due_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false
     }
 }, {
-    tableName: 'task', // Nama tabel di database
+    tableName: 'attachment', // Nama tabel di database
     timestamps: true // Menambahkan createdAt & updatedAt
 });
 
-module.exports = Task;
+module.exports = Attachment;

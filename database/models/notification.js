@@ -1,13 +1,21 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
-const Campaign = require('./campaign');
 const User = require('./user');
+const Campaign = require('./campaign');
 
-const Task = sequelize.define('Task', {
-    task_id: {
+const Notification = sequelize.define('Notification', {
+    notifcation_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
+    },
+    user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'user_id'
+        }
     },
     campaign_id: {
         type: DataTypes.INTEGER,
@@ -21,34 +29,22 @@ const Task = sequelize.define('Task', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    description: {
+    body: {
         type: DataTypes.STRING,
-        allowNull: false
-    },
-    assigned_to: {
-        type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-            model: User,
-            key: 'user_id'
-        }
     },
-    priority: {
-        type: DataTypes.ENUM(["Low", "Medium", "High"]),
+    is_read: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: "Low"
     },
-    status: {
-        type: DataTypes.ENUM(["Todo", "In Progress", "Done"]),
-        allowNull: false
+    type: {
+        type: DataTypes.ENUM(["Active", "Inactive"]),
+        allowNull: false,
+        defaultValue: "Active",
     },
-    due_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false
-    }
 }, {
-    tableName: 'task', // Nama tabel di database
+    tableName: 'user', // Nama tabel di database
     timestamps: true // Menambahkan createdAt & updatedAt
 });
 
-module.exports = Task;
+module.exports = Notification;

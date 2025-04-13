@@ -11,9 +11,18 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true
+    },
+    status: {
+        type: DataTypes.ENUM(["Active", "Inactive"]),
+        allowNull: false,
+        defaultValue: "Active",
+    },
+    avatar_base64: {
+        type: DataTypes.TEXT('long'),
+        allowNull: true
     }
 }, {
-    tableName: 'users', // Nama tabel di database
+    tableName: 'user', // Nama tabel di database
     timestamps: true // Menambahkan createdAt & updatedAt
 });
 

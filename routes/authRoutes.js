@@ -13,7 +13,7 @@ const router = express.Router();
 // Register Account
 router.post('/register', register);
 // Login Account
-router.post('/login', login);
+router.post('/login', authenticateJWT, login);
 // Check Token
 router.get('/token', authenticateJWT, tokenChecker);
 

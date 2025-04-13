@@ -1,14 +1,14 @@
 const { User } = require('../database/models');
 
-// Create User
-const postUser = async (req, res) => {
-    try {
-        const user = await User.create(req.body);
-        res.status(201).json(user);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
+// // Create User
+// const postUser = async (req, res) => {
+//     try {
+//         const user = await User.create(req.body);
+//         res.status(201).json(user);
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// };
 
 // Get All Users
 const getUsers = async (req, res) => {
@@ -41,7 +41,7 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-    postUser,
+    // postUser,
     getUsers,
     getUserById,
     updateUser,

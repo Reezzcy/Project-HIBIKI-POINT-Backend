@@ -31,6 +31,7 @@ const register = async (req, res, next) => {
 
         const newUser = await User.create({
             name: name,
+            status: 'Active'
         });
 
         const newAuth = await Auth.create({
