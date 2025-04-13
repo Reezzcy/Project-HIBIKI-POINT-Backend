@@ -1,4 +1,5 @@
 const { Campaign, User } = require('../database/models');
+const redis = require('../config/redis');
 
 // Create Campaign
 const postCampaign = async (req, res) => {
@@ -76,6 +77,62 @@ const getCampaignById = async (req, res) => {
         res.status(500).json({ message: "Error fetching campaign", error: error.message });
     }
 };
+
+
+// // Get All Campaigns with Cache
+// const getAllCampaigns = async (req, res) => {
+//     try {
+//         const cacheKey = 'all_campaigns';
+
+//         // Check if the data is in the cache
+//         const cachedData = await redis.get(cacheKey);
+//         if (cachedData) {
+//             return res.status(200).json(JSON.parse(cachedData)); // Return cached data
+//         }
+
+//         // If not cached, fetch from the database
+//         const campaigns = await Campaign.findAll({
+//             include: { model: User, attributes: ['name', 'email'] } // Include user info
+//         });
+
+//         // Store the result in cache for future use
+//         await redis.set(cacheKey, JSON.stringify(campaigns), 'EX', 3600); // Cache for 1 hour
+
+//         res.status(200).json(campaigns);
+//     } catch (error) {
+//         res.status(500).json({ message: "Error fetching campaigns", error: error.message });
+//     }
+// };
+
+// // Get Campaign by ID with Cache
+// const getCampaignById = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const cacheKey = `campaign_${id}`;
+
+//         // Check if the data is in the cache
+//         const cachedData = await redis.get(cacheKey);
+//         if (cachedData) {
+//             return res.status(200).json(JSON.parse(cachedData)); // Return cached data
+//         }
+
+//         // If not cached, fetch from the database
+//         const campaign = await Campaign.findByPk(id, {
+//             include: { model: User, as: 'users', attributes: ['name', 'email'], through: { attributes: [] } }
+//         });
+
+//         if (!campaign) {
+//             return res.status(404).json({ message: "Campaign not found" });
+//         }
+
+//         // Store the result in cache for future use
+//         await redis.set(cacheKey, JSON.stringify(campaign), 'EX', 3600); // Cache for 1 hour
+
+//         res.status(200).json(campaign);
+//     } catch (error) {
+//         res.status(500).json({ message: "Error fetching campaign", error: error.message });
+//     }
+// };
 
 // Update Camapign
 const updateCampaign = async (req, res) => {

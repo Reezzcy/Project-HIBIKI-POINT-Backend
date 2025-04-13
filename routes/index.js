@@ -10,6 +10,7 @@ const userRoutes = require('./userRoutes');
 const campaignRoutes = require('./campaignRoutes');
 const reportRoutes = require('./reportRoutes');
 const taskRoutes = require('./taskRoutes');
+const cacheRoutes = require('./cacheRoutes');
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use('/user', apiLimiter, userRoutes);
 router.use('/campaign', apiLimiter, campaignRoutes);
 router.use('/report', apiLimiter, reportRoutes);
 router.use('/task', apiLimiter, taskRoutes);
+router.use('/cache', apiLimiter, cacheRoutes);
 
 module.exports = router;
