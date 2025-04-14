@@ -4,6 +4,7 @@ const {
     apiLimiter, 
     loginLimiter 
 } = require('../middleware/rateLimiter');
+const { apiThrottle } = require('../middleware/throttling');
 
 const authRoutes = require('./authRoutes');
 const userRoutes = require('./userRoutes');
@@ -14,7 +15,7 @@ const cacheRoutes = require('./cacheRoutes');
 
 const router = express.Router();
 
-router.use('/auth', loginLimiter, authRoutes);
+router.use('/auth', apiThrottle, loginLimiter, authRoutes);
 router.use('/user', apiLimiter, userRoutes);
 router.use('/campaign', apiLimiter, campaignRoutes);
 router.use('/report', apiLimiter, reportRoutes);
