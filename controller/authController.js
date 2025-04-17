@@ -1,6 +1,7 @@
-const { Auth, User } = require("../database/models");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const { Auth, User } = require('../database/models');
+const { sendNotificationEmail } = require('../services/emailService');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const register = async (req, res, next) => {
     try {
@@ -8,8 +9,8 @@ const register = async (req, res, next) => {
 
         if (!name || !password) {
             return res.status(400).json({
-                status: "Error",
-                message: "Username and password are required",
+                status: 'Error',
+                message: 'Username and password are required',
                 data: null,
                 isError: true,
                 isSuccess: false,
@@ -19,8 +20,8 @@ const register = async (req, res, next) => {
         const user = await Auth.findOne({ where: { email } });
         if (user) {
             return res.status(400).json({
-                status: "Error",
-                message: "User already exists",
+                status: 'Error',
+                message: 'User already exists',
                 data: null,
                 isError: true,
                 isSuccess: false,
@@ -31,7 +32,7 @@ const register = async (req, res, next) => {
 
         const newUser = await User.create({
             name: name,
-            status: 'Active'
+            status: 'Active',
         });
 
         const newAuth = await Auth.create({
@@ -40,9 +41,15 @@ const register = async (req, res, next) => {
             user_id: newUser.user_id,
         });
 
+        const recipientEmail = email; // Gunakan email yang didaftarkan
+        const subject = 'Selamat Datang di Aplikasi Kami!';
+        const text = `Terima kasih telah mendaftar dengan nama ${name}!`;
+
+        sendNotificationEmail(recipientEmail, subject, text);
+
         return res.status(201).json({
-            status: "Success",
-            message: "User created successfully",
+            status: 'Success',
+            message: 'User created successfully',
             data: {
                 newUser,
                 id: newAuth.auth_id,
@@ -63,8 +70,8 @@ const login = async (req, res, next) => {
 
         if (!email || !password) {
             return res.status(400).json({
-                status: "Error",
-                message: "Email and password are required",
+                status: 'Error',
+                message: 'Email and password are required',
                 data: null,
                 isError: true,
                 isSuccess: false,
@@ -73,13 +80,13 @@ const login = async (req, res, next) => {
 
         const auth = await Auth.findOne({
             where: { email },
-            include: { model: User, as: "User", attributes: ["name"] }
+            include: { model: User, as: 'User', attributes: ['name'] },
         });
 
         if (!auth) {
             return res.status(404).json({
-                status: "Error",
-                message: "User not found",
+                status: 'Error',
+                message: 'User not found',
                 data: null,
                 isError: true,
                 isSuccess: false,
@@ -90,8 +97,8 @@ const login = async (req, res, next) => {
 
         if (!isPasswordValid) {
             return res.status(401).json({
-                status: "Error",
-                message: "Invalid email or password",
+                status: 'Error',
+                message: 'Invalid email or password',
                 data: null,
                 isError: true,
                 isSuccess: false,
@@ -109,9 +116,15 @@ const login = async (req, res, next) => {
             }
         );
 
+        const recipientEmail = auth.email;
+        const subject = 'Aktivitas Login Baru di Akun Anda';
+        const text = `Akun Anda dengan email ${auth.email} baru saja digunakan untuk login.`;
+
+        sendNotificationEmail(recipientEmail, subject, text);
+
         return res.status(200).json({
-            status: "Success",
-            message: "User logged in successfully",
+            status: 'Success',
+            message: 'User logged in successfully',
             data: {
                 id: auth.auth_id,
                 email: auth.email,
@@ -132,8 +145,8 @@ const tokenChecker = (req, res, next) => {
 
         if (!user) {
             return res.status(404).json({
-                status: "Error",
-                message: "User not found",
+                status: 'Error',
+                message: 'User not found',
                 data: null,
                 isError: true,
                 isSuccess: false,
@@ -141,8 +154,8 @@ const tokenChecker = (req, res, next) => {
         }
 
         return res.status(200).json({
-            status: "Success",
-            message: "Token verified successfully",
+            status: 'Success',
+            message: 'Token verified successfully',
             data: user,
             isError: false,
             isSuccess: true,
