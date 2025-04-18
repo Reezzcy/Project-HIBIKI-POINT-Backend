@@ -14,3 +14,4 @@ router.post('/campaign/:id', setCampaignToCache);
 router.delete('/campaign/:id', deleteCampaignFromCache);
 
 module.exports = router;
+

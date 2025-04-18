@@ -14,3 +14,26 @@ Aplikasi ini dikembangkan menggunakan Dart, bahasa pemrograman yang menjadi dasa
 # Backend
 Untuk sisi backend, Hibiki Point dibangun menggunakan JavaScript dengan runtime Node.js dan framework Express.js sebagai modul utamanya. Dengan kombinasi ini, diharapkan pengembangan dapat lebih cepat dan skalabel, serta mampu menangani berbagai kebutuhan API dengan efisien. Node.js memungkinkan aplikasi untuk berjalan dengan performa tinggi berkat model event-driven dan non-blocking I/O-nya, sementara Express.js menyederhanakan pembuatan endpoint API dengan routing yang fleksibel dan middleware yang powerful. Selain itu, ekosistem npm (Node Package Manager) yang kaya akan library dan tools memastikan proses pengembangan menjadi lebih produktif.
 
+## Instalasi & Setup
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/Reezzcy/Project-HIBIKI-POINT-Backend.git
+cd Project-HIBIKI-POINT-Backend.git
+```
+
+### 2. Instalasi Utama
+```bash
+npm install
+```
+
+### 3. Instalasi Tambahan
+```bash
+npm install sequelize mysql2 express express-rate-limit express-slow-down modemailer
+```
+
+### 4. Running Server
+```bash
+node server.js
+```
+
