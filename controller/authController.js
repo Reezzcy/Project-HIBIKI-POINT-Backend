@@ -1,5 +1,5 @@
 const { Auth, User } = require('../database/models');
-const { sendNotificationEmail } = require('../services/emailService');
+const { sendNotificationEmail } = require('../service/emailService');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 

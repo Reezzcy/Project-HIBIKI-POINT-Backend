@@ -4,7 +4,7 @@ const {
     getCampaignFromCache, 
     setCampaignToCache, 
     deleteCampaignFromCache 
-} = require('../controllers/cacheController');
+} = require('../controller/cacheController');
 
 // Get campaign from cache
 router.get('/campaign/:id', getCampaignFromCache);

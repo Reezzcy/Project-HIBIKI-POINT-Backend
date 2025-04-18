@@ -4,7 +4,7 @@ const User = require('./user');
 const Campaign = require('./campaign');
 
 const Notification = sequelize.define('Notification', {
-    notifcation_id: {
+    notification_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
@@ -43,7 +43,7 @@ const Notification = sequelize.define('Notification', {
         defaultValue: "Active",
     },
 }, {
-    tableName: 'user', // Nama tabel di database
+    tableName: 'notification', // Nama tabel di database
     timestamps: true // Menambahkan createdAt & updatedAt
 });
 
