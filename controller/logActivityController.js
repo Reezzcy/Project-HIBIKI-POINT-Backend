@@ -3,6 +3,7 @@ const { LogActivity } = require('../database/models');
 const { Op } = require('sequelize');
 const moment = require('moment-timezone');
 
+// This function adds a log activity to the cache and database
 const addLogActivity = async (req, res) => {
     try {
         const { user_id, activity_type, description } = req.body;
@@ -44,6 +45,7 @@ const addLogActivity = async (req, res) => {
     }
 };
 
+// This function retrieves a log activity from the cache
 const getLogActivityFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -66,6 +68,7 @@ const getLogActivityFromCache = async (req, res) => {
     }
 };
 
+// This function retrieves log activities from the database based on user_id and optional date range
 const getLogActivity = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -108,6 +111,7 @@ const getLogActivity = async (req, res) => {
     }
 };
 
+// This function deletes a log activity from the cache
 const deleteLogActivityFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -125,6 +129,7 @@ const deleteLogActivityFromCache = async (req, res) => {
     }
 };
 
+// This function deletes a log activity from the database
 const getLogActivityFromDb = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -144,6 +149,7 @@ const getLogActivityFromDb = async (req, res) => {
     }
 };
 
+// This function deletes a log activity from the database
 const deleteLogActivityFromDb = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -163,6 +169,7 @@ const deleteLogActivityFromDb = async (req, res) => {
     }
 };
 
+// This function updates a log activity in the database
 const updateLogActivity = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -192,6 +199,7 @@ const updateLogActivity = async (req, res) => {
     }
 };
 
+// This function retrieves a log activity by its ID from the database
 const getLogActivityById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -210,6 +218,7 @@ const getLogActivityById = async (req, res) => {
     }
 };
 
+// This function retrieves all log activities from the database
 const getAllLogActivities = async (req, res) => {
     try {
         const logActivities = await LogActivity.findAll({
@@ -226,6 +235,7 @@ const getAllLogActivities = async (req, res) => {
     }
 };
 
+// This function deletes all log activities from the database
 const deleteAllLogActivities = async (req, res) => {
     try {
         await LogActivity.destroy({ where: {}, truncate: true });
@@ -237,6 +247,7 @@ const deleteAllLogActivities = async (req, res) => {
     }
 };
 
+// This function deletes a log activity by its ID from the database
 const deleteLogActivityById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -255,6 +266,7 @@ const deleteLogActivityById = async (req, res) => {
     }
 };
 
+// This function deletes a log activity by user ID from the database
 const deleteLogActivityByUserId = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -273,6 +285,7 @@ const deleteLogActivityByUserId = async (req, res) => {
     }
 };
 
+// This function deletes log activities by date range from the database
 const deleteLogActivityByDate = async (req, res) => {
     try {
         const { start_date, end_date } = req.query;

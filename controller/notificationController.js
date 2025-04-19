@@ -8,6 +8,7 @@ const { sendPushNotification } = require('../utils/pushNotificationService');
 const { sendWhatsAppMessage } = require('../utils/whatsappService');
 const { sendSMS } = require('../utils/smsService');
 
+// Function to add a notification to the cache and database
 const addNotification = async (req, res) => {
     try {
         const { user_id, notification_type, notification_message } = req.body;
@@ -49,6 +50,7 @@ const addNotification = async (req, res) => {
     }
 };
 
+// Function to retrieve a notification from the cache
 const getNotificationFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -71,6 +73,7 @@ const getNotificationFromCache = async (req, res) => {
     }
 };
 
+// Function to retrieve a notification from the database
 const getNotification = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -89,6 +92,7 @@ const getNotification = async (req, res) => {
     }
 };
 
+// Function to delete a notification from the cache
 const deleteNotificationFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -112,6 +116,7 @@ const deleteNotificationFromCache = async (req, res) => {
     }
 };
 
+// Function to retrieve all notifications from the database
 const getAllNotifications = async (req, res) => {
     try {
         const notifications = await Notification.findAll({
@@ -132,6 +137,7 @@ const getAllNotifications = async (req, res) => {
     }
 };
 
+// Function to retrieve a notification by ID from the database
 const getNotificationById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -154,6 +160,7 @@ const getNotificationById = async (req, res) => {
     }
 };
 
+// Function to update a notification in the database
 const updateNotification = async (req, res) => {
     try {
         const { id } = req.params;
@@ -172,6 +179,7 @@ const updateNotification = async (req, res) => {
     }
 };
 
+// Function to delete a notification from the database
 const deleteNotification = async (req, res) => {
     try {
         const { id } = req.params;
@@ -189,6 +197,7 @@ const deleteNotification = async (req, res) => {
     }
 };
 
+// Function to send a notification via email, push notification, WhatsApp, and SMS
 const sendNotification = async (req, res) => {
     try {
         const { user_id, notification_type, notification_message } = req.body;
@@ -226,6 +235,7 @@ const sendNotification = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by type from the database
 const getNotificationByType = async (req, res) => {
     try {
         const { notification_type } = req.params;
@@ -249,6 +259,27 @@ const getNotificationByType = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by type without user details from the database
+const getNotificationByTypeWithoutUser = async (req, res) => {
+    try {
+        const { notification_type } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: { notification_type },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Function to retrieve notifications by user ID from the database
 const getNotificationByUserId = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -272,6 +303,27 @@ const getNotificationByUserId = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by user ID without user details from the database
+const getNotificationByUserIdWithoutUser = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: { user_id },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Function to retrieve notifications by date from the database
 const getNotificationByDate = async (req, res) => {
     try {
         const { date } = req.params;
@@ -300,6 +352,32 @@ const getNotificationByDate = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by date without user details from the database
+const getNotificationByDateWithoutUser = async (req, res) => {
+    try {
+        const { date } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: {
+                created_at: {
+                    [Op.gte]: moment(date).startOf('day').toDate(),
+                    [Op.lte]: moment(date).endOf('day').toDate(),
+                },
+            },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Function to retrieve notifications by date range from the database
 const getNotificationByDateRange = async (req, res) => {
     try {
         const { start_date, end_date } = req.params;
@@ -328,6 +406,32 @@ const getNotificationByDateRange = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by date range without user details from the database
+const getNotificationByDateRangeWithoutUser = async (req, res) => {
+    try {
+        const { start_date, end_date } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: {
+                created_at: {
+                    [Op.gte]: moment(start_date).startOf('day').toDate(),
+                    [Op.lte]: moment(end_date).endOf('day').toDate(),
+                },
+            },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Function to retrieve notifications by user ID and date from the database
 const getNotificationByUserIdAndDate = async (req, res) => {
     try {
         const { user_id, date } = req.params;
@@ -357,6 +461,7 @@ const getNotificationByUserIdAndDate = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by user ID and date range from the database
 const getNotificationByUserIdAndDateRange = async (req, res) => {
     try {
         const { user_id, start_date, end_date } = req.params;
@@ -386,6 +491,7 @@ const getNotificationByUserIdAndDateRange = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by type and date from the database
 const getNotificationByTypeAndDate = async (req, res) => {
     try {
         const { notification_type, date } = req.params;
@@ -415,6 +521,7 @@ const getNotificationByTypeAndDate = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by type and date range from the database
 const getNotificationByTypeAndDateRange = async (req, res) => {
     try {
         const { notification_type, start_date, end_date } = req.params;
@@ -444,6 +551,7 @@ const getNotificationByTypeAndDateRange = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by user ID and type from the database
 const getNotificationByUserIdAndType = async (req, res) => {
     try {
         const { user_id, notification_type } = req.params;
@@ -467,6 +575,7 @@ const getNotificationByUserIdAndType = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by user ID and type without user details from the database
 const getNotificationByUserIdAndTypeAndDate = async (req, res) => {
     try {
         const { user_id, notification_type, date } = req.params;
@@ -497,6 +606,7 @@ const getNotificationByUserIdAndTypeAndDate = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by user ID and type and date range from the database
 const getNotificationByUserIdAndTypeAndDateRange = async (req, res) => {
     try {
         const { user_id, notification_type, start_date, end_date } = req.params;
@@ -527,6 +637,7 @@ const getNotificationByUserIdAndTypeAndDateRange = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by type and user ID and date from the database
 const getNotificationByTypeAndUserIdAndDate = async (req, res) => {
     try {
         const { notification_type, user_id, date } = req.params;
@@ -557,6 +668,7 @@ const getNotificationByTypeAndUserIdAndDate = async (req, res) => {
     }
 };
 
+// Function to retrieve notifications by type and user ID and date range from the database
 const getNotificationByTypeAndUserIdAndDateRange = async (req, res) => {
     try {
         const { notification_type, user_id, start_date, end_date } = req.params;
@@ -598,9 +710,13 @@ module.exports = {
     deleteNotification,
     sendNotification,
     getNotificationByType,
+    getNotificationByTypeWithoutUser,
     getNotificationByUserId,
+    getNotificationByUserIdWithoutUser,
     getNotificationByDate,
+    getNotificationByDateWithoutUser,
     getNotificationByDateRange,
+    getNotificationByDateRangeWithoutUser,
     getNotificationByUserIdAndDate,
     getNotificationByUserIdAndDateRange,
     getNotificationByTypeAndDate,

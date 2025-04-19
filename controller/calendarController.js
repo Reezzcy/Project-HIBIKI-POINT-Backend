@@ -1,10 +1,12 @@
 const calendarService = require('../service/googleCalendarService');
 
+// Controller untuk mengelola Google Calendar
 exports.login = (req, res) => {
     const url = calendarService.getAuthUrl();
     res.redirect(url);
 };
 
+// Controller untuk menangani callback dari Google setelah login
 exports.oauthCallback = async (req, res) => {
     try {
         const { code } = req.query;
@@ -16,6 +18,7 @@ exports.oauthCallback = async (req, res) => {
     }
 };
 
+// Controller untuk mendapatkan daftar event dari Google Calendar
 exports.addEvent = async (req, res) => {
     try {
         const response = await calendarService.createEvent(req.body);
