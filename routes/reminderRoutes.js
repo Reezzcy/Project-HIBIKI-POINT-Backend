@@ -13,22 +13,16 @@ const {
 
 // Create a new reminder
 router.post('/reminders', addReminder);
-
 // Get all reminders
 router.get('/reminders', getAllReminders);
-
 // Get a reminder by ID
 router.get('/reminders/:id', getReminderById);
-
 // Update a reminder
 router.put('/reminders/:id', updateReminder);
-
 // Delete a reminder
 router.delete('/reminders/:id', deleteReminder);
-
 // Get reminder from cache
 router.get('/reminders/cache/:id', getReminderFromCache);
-
 // Delete reminder from cache
 router.delete('/reminders/cache/:id', deleteReminderFromCache);
 

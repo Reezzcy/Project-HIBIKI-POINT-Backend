@@ -1,8 +1,10 @@
 const { google } = require('googleapis');
 const oauth2Client = require('../config/googleAuth');
 
+// Konfigurasi OAuth2 Client
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
+// Konfigurasi OAuth2 Client
 function getAuthUrl() {
     return oauth2Client.generateAuthUrl({
         access_type: 'offline',
@@ -12,12 +14,14 @@ function getAuthUrl() {
     });
 }
 
+// Fungsi untuk mendapatkan token dari kode otorisasi
 async function setTokenFromCode(code) {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
     return tokens;
 }
 
+// Fungsi untuk membuat event di Google Calendar
 async function createEvent(eventDetails) {
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
