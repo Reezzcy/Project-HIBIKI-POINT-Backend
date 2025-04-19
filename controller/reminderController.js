@@ -1,6 +1,7 @@
 const redis = require('../config/redisConfig');
 const { Reminder, User } = require('../database/models');
 
+// This function adds a reminder to the Redis cache and the database
 const addReminder = async (req, res) => {
     try {
         const { user_id, reminder_text } = req.body;
@@ -38,6 +39,7 @@ const addReminder = async (req, res) => {
     }
 };
 
+// This function retrieves a reminder from the Redis cache
 const getReminderFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -60,6 +62,7 @@ const getReminderFromCache = async (req, res) => {
     }
 };
 
+// This function retrieves all reminders from the database
 const getAllReminders = async (req, res) => {
     try {
         const reminders = await Reminder.findAll({
@@ -74,6 +77,7 @@ const getAllReminders = async (req, res) => {
     }
 };
 
+// This function retrieves a specific reminder by ID from the database
 const getReminderById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -93,6 +97,7 @@ const getReminderById = async (req, res) => {
     }
 };
 
+// This function updates a reminder in the database
 const updateReminder = async (req, res) => {
     try {
         const { id } = req.params;
@@ -114,6 +119,7 @@ const updateReminder = async (req, res) => {
     }
 };
 
+// This function deletes a reminder from the database
 const deleteReminder = async (req, res) => {
     try {
         const { id } = req.params;
@@ -132,6 +138,7 @@ const deleteReminder = async (req, res) => {
     }
 };
 
+// This function deletes a reminder from the Redis cache
 const deleteReminderFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;

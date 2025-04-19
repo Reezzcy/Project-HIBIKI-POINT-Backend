@@ -1,6 +1,7 @@
 const redis = require('../config/redis');
 const { Attachment, User } = require('../database/models');
 
+// This function adds an attachment to the Redis cache and the database
 const addAttachment = async (req, res) => {
     try {
         const { user_id, attachment_url } = req.body;
@@ -38,6 +39,7 @@ const addAttachment = async (req, res) => {
     }
 };
 
+// This function retrieves an attachment from the Redis cache
 const getAttachmentFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -60,6 +62,7 @@ const getAttachmentFromCache = async (req, res) => {
     }
 };
 
+// This function deletes an attachment from the Redis cache
 const deleteAttachmentFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -77,6 +80,7 @@ const deleteAttachmentFromCache = async (req, res) => {
     }
 };
 
+// This function retrieves an attachment from the database
 const getAttachmentFromDb = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -97,6 +101,7 @@ const getAttachmentFromDb = async (req, res) => {
     }
 };
 
+// This function updates an attachment in the database
 const updateAttachmentInDb = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -127,6 +132,7 @@ const updateAttachmentInDb = async (req, res) => {
     }
 };
 
+// This function deletes an attachment from the database
 const deleteAttachmentFromDb = async (req, res) => {
     try {
         const { user_id } = req.params;

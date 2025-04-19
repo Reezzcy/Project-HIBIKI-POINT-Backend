@@ -1,6 +1,7 @@
 const redis = require('../config/redis');
 const { Comment, User } = require('../database/models');
 
+// This function handles adding a comment and caching it in Redis
 const addComment = async (req, res) => {
     try {
         const { user_id, comment_text } = req.body;
@@ -38,6 +39,7 @@ const addComment = async (req, res) => {
     }
 };
 
+// This function retrieves a comment from Redis cache
 const getCommentFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -60,6 +62,7 @@ const getCommentFromCache = async (req, res) => {
     }
 };
 
+// This function deletes a comment from Redis cache
 const deleteCommentFromCache = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -81,6 +84,7 @@ const deleteCommentFromCache = async (req, res) => {
     }
 };
 
+// This function retrieves all comments from the database
 const getAllComments = async (req, res) => {
     try {
         const comments = await Comment.findAll({
@@ -96,6 +100,7 @@ const getAllComments = async (req, res) => {
     }
 };
 
+// This function retrieves a comment by its ID from the database
 const getCommentById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -118,6 +123,7 @@ const getCommentById = async (req, res) => {
     }
 };
 
+// This function updates a comment in the database
 const updateComment = async (req, res) => {
     try {
         const { id } = req.params;
@@ -136,6 +142,7 @@ const updateComment = async (req, res) => {
     }
 };
 
+// This function deletes a comment from the database
 const deleteComment = async (req, res) => {
     try {
         const { id } = req.params;
