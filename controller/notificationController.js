@@ -249,6 +249,25 @@ const getNotificationByType = async (req, res) => {
     }
 };
 
+const getNotificationByTypeWithoutUser = async (req, res) => {
+    try {
+        const { notification_type } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: { notification_type },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const getNotificationByUserId = async (req, res) => {
     try {
         const { user_id } = req.params;
@@ -259,6 +278,25 @@ const getNotificationByUserId = async (req, res) => {
                 model: User,
                 attributes: ['user_id', 'name', 'email'],
             },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getNotificationByUserIdWithoutUser = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: { user_id },
             order: [['created_at', 'DESC']],
         });
 
@@ -300,6 +338,30 @@ const getNotificationByDate = async (req, res) => {
     }
 };
 
+const getNotificationByDateWithoutUser = async (req, res) => {
+    try {
+        const { date } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: {
+                created_at: {
+                    [Op.gte]: moment(date).startOf('day').toDate(),
+                    [Op.lte]: moment(date).endOf('day').toDate(),
+                },
+            },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const getNotificationByDateRange = async (req, res) => {
     try {
         const { start_date, end_date } = req.params;
@@ -314,6 +376,30 @@ const getNotificationByDateRange = async (req, res) => {
             include: {
                 model: User,
                 attributes: ['user_id', 'name', 'email'],
+            },
+            order: [['created_at', 'DESC']],
+        });
+
+        if (!notifications.length) {
+            return res.status(404).json({ message: 'No notifications found' });
+        }
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getNotificationByDateRangeWithoutUser = async (req, res) => {
+    try {
+        const { start_date, end_date } = req.params;
+
+        const notifications = await Notification.findAll({
+            where: {
+                created_at: {
+                    [Op.gte]: moment(start_date).startOf('day').toDate(),
+                    [Op.lte]: moment(end_date).endOf('day').toDate(),
+                },
             },
             order: [['created_at', 'DESC']],
         });
@@ -598,9 +684,13 @@ module.exports = {
     deleteNotification,
     sendNotification,
     getNotificationByType,
+    getNotificationByTypeWithoutUser,
     getNotificationByUserId,
+    getNotificationByUserIdWithoutUser,
     getNotificationByDate,
+    getNotificationByDateWithoutUser,
     getNotificationByDateRange,
+    getNotificationByDateRangeWithoutUser,
     getNotificationByUserIdAndDate,
     getNotificationByUserIdAndDateRange,
     getNotificationByTypeAndDate,
