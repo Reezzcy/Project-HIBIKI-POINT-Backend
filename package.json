@@ -16,6 +16,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "express-slow-down": "^2.0.3",
+    "googleapis": "^148.0.0",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.0",
