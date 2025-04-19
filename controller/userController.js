@@ -1,49 +1,142 @@
 const { User } = require('../database/models');
 
-// // Create User
-// const postUser = async (req, res) => {
-//     try {
-//         const user = await User.create(req.body);
-//         res.status(201).json(user);
-//     } catch (error) {
-//         res.status(400).json({ error: error.message });
-//     }
-// };
+// Function to get all users from cache
+const getUsersFromCache = async (req, res) => {
+    try {
+        const cachedUsers = await redis.get('all_users');
 
-// Get All Users
-const getUsers = async (req, res) => {
-    const users = await User.findAll();
-    res.json(users);
+        if (cachedUsers) {
+            return res.status(200).json(JSON.parse(cachedUsers));
+        }
+
+        return res.status(200).json({ message: 'Cache miss for users', users: [] });
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching from cache for users: ${error.message}`, error: error.message });
+    }
 };
 
-// Get User by ID
-const getUserById = async (req, res) => {
-    const user = await User.findByPk(req.params.id);
-    user ? res.json(user) : res.status(404).json({ message: 'User not found' });
+// Function to get all users from DB and cache them
+const getUsersFromDb = async (req, res) => {
+    try {
+        const users = await User.findAll();
+
+        if (users) {
+            await redis.set('all_users', JSON.stringify(users), 'EX', 3600);
+
+            if (users.length === 0) {
+                return res.status(200).json([]);  // Return empty array if no users
+            }
+
+            return res.status(200).json(users);
+        }
+
+        return res.status(404).json({ message: 'Users not found' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching from DB', error: error.message });
+    }
 };
 
-// Update User
+// Function to get user by ID from cache
+const getUserByIdFromCache = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const cachedUser = await redis.get(`user_${id}`);
+
+        if (cachedUser) {
+            return res.status(200).json(JSON.parse(cachedUser));
+        }
+
+        return res.status(404).json({ message: `User with ID ${id} not found in cache` });
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching user with ID ${id} from cache: ${error.message}`, error: error.message });
+    }
+};
+
+// Function to get user by ID from DB and cache it
+const getUserByIdFromDb = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await redis.set(`user_${id}`, JSON.stringify(user), 'EX', 3600);
+        return res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching user with ID ${id} from DB: ${error.message}`, error: error.message });
+    }
+};
+
+// Function to update user and invalidate the cache
 const updateUser = async (req, res) => {
-    const user = await User.findByPk(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const { id } = req.params;
 
-    await user.update(req.body);
-    res.json(user);
+    try {
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await user.update(req.body);
+
+        await redis.del(`user_${id}`);
+        return res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating user', error: error.message });
+    }
 };
 
-// Delete User
-const deleteUser = async (req, res) => {
-    const user = await User.findByPk(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+// Function to delete user cache by ID
+const deleteUserFromCache = async (req, res) => {
+    try {
+        const { id } = req.params;
 
-    await user.destroy();
-    res.json({ message: 'User deleted' });
+        await redis.del(`user_${id}`);
+        return res.status(200).json({ message: `User cache for ID ${id} deleted successfully` });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting from cache', error: error.message });
+    }
+};
+
+// Function to delete all users cache
+const deleteAllUsersCache = async (req, res) => {
+    try {
+        await redis.del('all_users');
+        return res.status(200).json({ message: 'All users cache deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting all users from cache', error: error.message });
+    }
+};
+
+// Function to delete user from DB and invalidate the cache
+const deleteUserFromDb = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await user.destroy();
+
+        await redis.del(`user_${id}`);
+        return res.status(200).json({ message: `User with ID ${id} deleted successfully` });
+    } catch (error) {
+        res.status(500).json({ message: `Error deleting user with ID ${id} from DB: ${error.message}`, error: error.message });
+    }
 };
 
 module.exports = {
-    // postUser,
-    getUsers,
-    getUserById,
+    getUsersFromCache,
+    getUsersFromDb,
+    getUserByIdFromCache,
+    getUserByIdFromDb,
     updateUser,
-    deleteUser
+    deleteUserFromCache,
+    deleteUserFromDb,
+    deleteAllUsersCache
 };

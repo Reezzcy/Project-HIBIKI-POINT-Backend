@@ -27,11 +27,11 @@ Task.belongsToMany(User, { through: UserTask, foreignKey: 'task_id', otherKey: '
 User.hasMany(Notification, { foreignKey: 'user_id' });
 Notification.belongsTo(User, { foreignKey: 'user_id' });
 
-// One-to-Many: Satu User bisa punya banyak Notification
+// One-to-Many: Satu User bisa punya banyak Attachment
 User.hasMany(Attachment, { foreignKey: 'uploaded_by' });
 Attachment.belongsTo(User, { foreignKey: 'uploaded_by' });
 
-// One-to-Many: Satu User bisa punya banyak Task
+// One-to-Many: Satu User bisa punya banyak Reminder
 User.hasMany(Reminder, { foreignKey: 'user_id' });
 Reminder.belongsTo(User, { foreignKey: 'user_id' });
 

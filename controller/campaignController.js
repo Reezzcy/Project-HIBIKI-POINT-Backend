@@ -6,7 +6,6 @@ const postCampaign = async (req, res) => {
     try {
         const { user_id, title, description, budget, status, start_date, end_date } = req.body;
 
-        // Validasi input
         if (!user_id || !title || !description || !budget || !status || !start_date || !end_date) {
             return res.status(400).json({ message: "All fields are required!" });
         }
@@ -17,11 +16,11 @@ const postCampaign = async (req, res) => {
             return res.status(404).json({ message: "User not found!" });
         }
 
-        // Buat campaign baru
         const newCampaign = await Campaign.create({ user_id, title, description, budget, status, start_date, end_date });
         await user.addCampaign(newCampaign);
 
-        res.status(201).json({ message: "Campaign created successfully!", campaign: newCampaign });
+        await redis.del('all_campaigns');
+        return res.status(201).json({ message: "Campaign created successfully!", campaign: newCampaign });
     } catch (error) {
         res.status(500).json({ message: "Error creating campaign", error: error.message });
     }
@@ -30,170 +29,197 @@ const postCampaign = async (req, res) => {
 // Add User to Campaign
 const addUserToCampaign = async (req, res) => {
     try {
-        const { userId, campaignId } = req.body;
+        const { user_id, campaign_id } = req.body;
 
-        const user = await User.findByPk(userId);
-        const campaign = await Campaign.findByPk(campaignId);
+        const user = await User.findByPk(user_id);
+        const campaign = await Campaign.findByPk(campaign_id);
 
         if (!user || !campaign) {
             return res.status(404).json({ message: "User or Campaign not found!" });
         }
 
         await user.addCampaign(campaign);
-        
-        res.status(200).json({ message: "User added to campaign successfully!" });
+
+        await redis.del(`campaign_${campaign_id}`);
+        await redis.del('all_campaigns');
+        return res.status(200).json({ message: "User added to campaign successfully!" });
     } catch (error) {
         res.status(500).json({ message: "Error adding user to campaign", error: error.message });
     }
 };
 
-// Get All Camapaign
-const getAllCampaigns = async (req, res) => {
-    try {
-        const campaigns = await Campaign.findAll({
-            include: { model: User, attributes: ['name', 'email'] } // Sertakan info user yang memiliki campaign
-        });
-
-        res.status(200).json(campaigns);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching campaigns", error: error.message });
-    }
-};
-
-// Get All Campaign by Id
-const getCampaignById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const campaign = await Campaign.findByPk(id, {
-            include: { model: User, as : 'users', attributes: ['name', 'email'], through: { attributes: [] } }
-        });
-
-        if (!campaign) {
-            return res.status(404).json({ message: "Campaign not found" });
-        }
-
-        res.status(200).json(campaign);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching campaign", error: error.message });
-    }
-};
-
-
-// // Get All Campaigns with Cache
-// const getAllCampaigns = async (req, res) => {
-//     try {
-//         const cacheKey = 'all_campaigns';
-
-//         // Check if the data is in the cache
-//         const cachedData = await redis.get(cacheKey);
-//         if (cachedData) {
-//             return res.status(200).json(JSON.parse(cachedData)); // Return cached data
-//         }
-
-//         // If not cached, fetch from the database
-//         const campaigns = await Campaign.findAll({
-//             include: { model: User, attributes: ['name', 'email'] } // Include user info
-//         });
-
-//         // Store the result in cache for future use
-//         await redis.set(cacheKey, JSON.stringify(campaigns), 'EX', 3600); // Cache for 1 hour
-
-//         res.status(200).json(campaigns);
-//     } catch (error) {
-//         res.status(500).json({ message: "Error fetching campaigns", error: error.message });
-//     }
-// };
-
-// // Get Campaign by ID with Cache
-// const getCampaignById = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const cacheKey = `campaign_${id}`;
-
-//         // Check if the data is in the cache
-//         const cachedData = await redis.get(cacheKey);
-//         if (cachedData) {
-//             return res.status(200).json(JSON.parse(cachedData)); // Return cached data
-//         }
-
-//         // If not cached, fetch from the database
-//         const campaign = await Campaign.findByPk(id, {
-//             include: { model: User, as: 'users', attributes: ['name', 'email'], through: { attributes: [] } }
-//         });
-
-//         if (!campaign) {
-//             return res.status(404).json({ message: "Campaign not found" });
-//         }
-
-//         // Store the result in cache for future use
-//         await redis.set(cacheKey, JSON.stringify(campaign), 'EX', 3600); // Cache for 1 hour
-
-//         res.status(200).json(campaign);
-//     } catch (error) {
-//         res.status(500).json({ message: "Error fetching campaign", error: error.message });
-//     }
-// };
-
-// Update Camapign
+// Update Campaign
 const updateCampaign = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, budget, status, start_date, end_date } = req.body;
 
         const campaign = await Campaign.findByPk(id);
+
         if (!campaign) {
             return res.status(404).json({ message: "Campaign not found" });
         }
 
         await campaign.update({ title, description, budget, status, start_date, end_date });
 
-        res.status(200).json({ message: "Campaign updated successfully", campaign });
+        await redis.del(`campaign_${id}`);
+        await redis.del('all_campaigns');
+        return res.status(200).json({ message: "Campaign updated successfully", campaign });
     } catch (error) {
         res.status(500).json({ message: "Error updating campaign", error: error.message });
     }
 };
 
-// Delete Campaign
-const deleteCampaign = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const campaign = await Campaign.findByPk(id);
-
-        if (!campaign) {
-            return res.status(404).json({ message: "Campaign not found" });
-        }
-
-        await campaign.destroy();
-        res.status(200).json({ message: "Campaign deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Error deleting campaign", error: error.message });
-    }
-};
-
+// Remove User from Campaign
 const removeUserFromCampaign = async (req, res) => {
     try {
-        const { userId, campaignId } = req.body;
+        const { user_id, campaign_id } = req.body;
 
-        const user = await User.findByPk(userId);
-        const campaign = await Campaign.findByPk(campaignId);
+        const user = await User.findByPk(user_id);
+        const campaign = await Campaign.findByPk(campaign_id);
 
         if (!user || !campaign) {
             return res.status(404).json({ message: "User or Campaign not found!" });
         }
 
         await user.removeCampaign(campaign);
-        res.status(200).json({ message: "User removed from campaign successfully!" });
+
+        await redis.del(`campaign_${campaign_id}`);
+        await redis.del('all_campaigns');
+        return res.status(200).json({ message: "User removed from campaign successfully!" });
     } catch (error) {
         res.status(500).json({ message: "Error removing user from campaign", error: error.message });
     }
 };
 
-module.exports = { 
+// Fetch Campaigns from Cache
+const getAllCampaignsFromCache = async (req, res) => {
+    try {
+        const cachedCampaigns = await redis.get('all_campaigns');
+
+        if (cachedCampaigns) {
+            return res.status(200).json(JSON.parse(cachedCampaigns));
+        }
+
+        return res.status(404).json({ message: 'Campaigns not found in cache' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching from cache', error: error.message });
+    }
+};
+
+// Fetch Campaigns from Database and Cache Them
+const getAllCampaignsFromDb = async (req, res) => {
+    try {
+        const campaigns = await Campaign.findAll({
+            include: { model: User, attributes: ['name', 'email'] }
+        });
+
+        if (!campaigns) {
+            return res.status(404).json({ message: 'Campaigns not found' });
+        }
+
+        await redis.set('all_campaigns', JSON.stringify(campaigns), 'EX', 3600);
+        return res.status(200).json(campaigns);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching from DB', error: error.message });
+    }
+};
+
+// Fetch Campaign by ID from Cache
+const getCampaignByIdFromCache = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const cachedCampaign = await redis.get(`campaign_${id}`);
+
+        if (cachedCampaign) {
+            return res.status(200).json(JSON.parse(cachedCampaign));
+        }
+
+        return res.status(404).json({ message: 'Campaign not found in cache' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching from cache', error: error.message });
+    }
+};
+
+// Fetch Campaign by ID from DB and Cache It
+const getCampaignByIdFromDb = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const campaign = await Campaign.findByPk(id, {
+            include: { model: User, as: 'users', attributes: ['name', 'email'], through: { attributes: [] } }
+        });
+
+        if (!campaign) {
+            return res.status(404).json({ message: "Campaign not found" });
+        }
+
+        await redis.set(`campaign_${id}`, JSON.stringify(campaign), 'EX', 3600);
+        res.status(200).json(campaign);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching from DB', error: error.message });
+    }
+};
+
+// Delete Campaign from Cache
+const deleteCampaignFromCache = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const cachedCampaign = await redis.get(`campaign_${id}`);
+
+        if (cachedCampaign) {
+            await redis.del(`campaign_${id}`);
+            return res.status(200).json({ message: `Campaign with ID ${id} deleted successfully` });
+        }
+
+        return res.status(404).json({ message: `Campaign not found` });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting campaign from DB', error: error.message });
+    }
+};
+
+// Delete All Campaigns from Cache
+const deleteAllCampaignsFromCache = async (req, res) => {
+    try {
+        const cachedCampaigns = await redis.get('all_campaigns');
+
+        if (cachedCampaigns) {
+            await redis.del('all_campaigns');
+            return res.status(200).json({ message: 'All campaigns cache deleted successfully' });
+        }
+
+        return res.status(404).json({ message: 'No cache found for all campaigns' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting campaign from DB', error: error.message });
+    }
+};
+
+// Delete Campaign from DB
+const deleteCampaignFromDb = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const campaign = await Campaign.findByPk(id);
+
+        if (!campaign) {
+            return res.status(404).json({ message: 'Campaign not found' });
+        }
+
+        await campaign.destroy();
+        return res.status(200).json({ message: `Campaign with ID ${id} deleted successfully` });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting campaign from DB', error: error.message });
+    }
+};
+
+module.exports = {
     postCampaign,
-    addUserToCampaign, 
-    getAllCampaigns, 
-    getCampaignById, 
-    updateCampaign, 
-    deleteCampaign,
-    removeUserFromCampaign
+    addUserToCampaign,
+    updateCampaign,
+    removeUserFromCampaign,
+    getAllCampaignsFromCache,
+    getAllCampaignsFromDb,
+    getCampaignByIdFromCache,
+    getCampaignByIdFromDb,
+    deleteCampaignFromCache,
+    deleteAllCampaignsFromCache,
+    deleteCampaignFromDb
 };

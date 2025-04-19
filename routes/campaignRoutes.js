@@ -3,27 +3,27 @@ const express = require('express');
 const {
     postCampaign,
     addUserToCampaign,
-    getAllCampaigns,
-    getCampaignById,
     updateCampaign,
-    deleteCampaign,
-    removeUserFromCampaign
+    removeUserFromCampaign,
+    getAllCampaignsFromDb,
+    getCampaignByIdFromDb,
+    deleteCampaignFromDb
 } = require('../controller/campaignController');
 
 const router = express.Router();
 
 // Create Campaign
 router.post('/campaigns', postCampaign);
-// Add User to Campaign
+// Add User to Campaign 
 router.post('/addUser', addUserToCampaign);
-// Get All Campaigns
-router.get('/campaigns', getAllCampaigns);
-// Get Campaign by ID
-router.get('/campaigns/:id', getCampaignById);
+// Get All Campaigns from DB
+router.get('/campaigns', getAllCampaignsFromDb);
+// Get Campaign by ID from DB
+router.get('/campaigns/:id', getCampaignByIdFromDb);
 // Update Campaign
 router.put('/campaigns/:id', updateCampaign);
-// Delete Campaign
-router.delete('/campaigns/:id', deleteCampaign);
+// Delete Campaign from DB
+router.delete('/campaigns/:id', deleteCampaignFromDb);
 // Remove User from Campaign
 router.delete('/removeUser', removeUserFromCampaign);
 
