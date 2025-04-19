@@ -130,6 +130,7 @@ const deleteUserFromDb = async (req, res) => {
     }
 };
 
+// Function Get User with Tasks
 const getUserTasks = async (req, res) => {
     try {
         const { id } = req.params;
@@ -148,6 +149,7 @@ const getUserTasks = async (req, res) => {
     }
 };
 
+// Function Get User with Notifications
 const getUserNotifications = async (req, res) => {
     try {
         const { id } = req.params;
@@ -163,6 +165,7 @@ const getUserNotifications = async (req, res) => {
     }
 };
 
+// Function Get User with Reminders
 const getUserReminders = async (req, res) => {
     try {
         const { id } = req.params;
@@ -178,6 +181,7 @@ const getUserReminders = async (req, res) => {
     }
 };
 
+// Function Get User with Comments
 const getUserComments = async (req, res) => {
     try {
         const { id } = req.params;
@@ -193,6 +197,7 @@ const getUserComments = async (req, res) => {
     }
 };
 
+// Function Get User with Attachments
 const getUserAttachments = async (req, res) => {
     try {
         const { id } = req.params;

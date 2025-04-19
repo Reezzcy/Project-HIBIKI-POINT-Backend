@@ -1,5 +1,6 @@
 const { Campaign, Task, User } = require('../database/models');
 
+// Create a new task and invalidate the all_tasks cache
 const postTask = async (req, res) => {
     try {
         const { campaign_id, title, description, assigned_to, priority, status, due_date } = req.body;
@@ -19,6 +20,7 @@ const postTask = async (req, res) => {
     }
 };
 
+// Get all tasks from Redis cache
 const getAllTasksFromCache = async (req, res) => {
     try {
         const cachedTasks = await redis.get('all_tasks');
@@ -34,6 +36,7 @@ const getAllTasksFromCache = async (req, res) => {
     }
 };
 
+// Get all tasks from the database and cache the result
 const getAllTasksFromDb = async (req, res) => {
     try {
         const tasks = await Task.findAll();
@@ -47,6 +50,7 @@ const getAllTasksFromDb = async (req, res) => {
     }
 };
 
+// Get a task by ID from Redis cache
 const getTaskByIdFromCache = async (req, res) => {
     try {
         const { id } = req.params;
@@ -63,6 +67,7 @@ const getTaskByIdFromCache = async (req, res) => {
     }
 };
 
+// Get a task by ID from the database and cache the result
 const getTaskByIdFromDb = async (req, res) => {
     try {
         const { id } = req.params;
@@ -81,6 +86,7 @@ const getTaskByIdFromDb = async (req, res) => {
     }
 };
 
+// Get all tasks with associated users and campaigns from Redis cache
 const getAllTasksWithUserFromCache = async (req, res) => {
     try {
         const cachedTasks = await redis.get('all_tasks_with_user');
@@ -96,6 +102,7 @@ const getAllTasksWithUserFromCache = async (req, res) => {
     }
 };
 
+// Get all tasks with associated users and campaigns from the database and cache the result
 const getAllTasksWithUserFromDb = async (req, res) => {
     try {
         const tasks = await Task.findAll({
@@ -121,6 +128,7 @@ const getAllTasksWithUserFromDb = async (req, res) => {
     }
 };
 
+// Get a task with associated users and campaigns by ID from Redis cache
 const getTaskByIdWithUserFromCache = async (req, res) => {
     try {
         const { id } = req.params;
@@ -137,6 +145,7 @@ const getTaskByIdWithUserFromCache = async (req, res) => {
     }
 };
 
+// Get a task with associated users and campaigns by ID from the database and cache the result
 const getTaskByIdWithUserFromDb = async (req, res) => {
     try {
         const { id } = req.params;
@@ -212,6 +221,7 @@ const removeUserFromTask = async (req, res) => {
     }
 };
 
+// Update a task by ID and invalidate related caches
 const updateTask = async (req, res) => {
     try {
         const { id } = req.params;
@@ -231,6 +241,7 @@ const updateTask = async (req, res) => {
     }
 };
 
+// Delete all tasks from Redis cache
 const deleteAllTasksFromCache = async (req, res) => {
     try {
         await redis.del('all_tasks');
@@ -240,6 +251,7 @@ const deleteAllTasksFromCache = async (req, res) => {
     }
 };
 
+// Delete a specific task from Redis cache by ID
 const deleteTaskFromCache = async (req, res) => {
     try {
         const { id } = req.params;
@@ -250,6 +262,7 @@ const deleteTaskFromCache = async (req, res) => {
     }
 };
 
+// Delete all tasks with user associations from Redis cache
 const deleteAllTasksWithUserFromCache = async (req, res) => {
     try {
         await redis.del('all_tasks_with_user');
@@ -259,6 +272,7 @@ const deleteAllTasksWithUserFromCache = async (req, res) => {
     }
 };
 
+// Delete a specific task with user associations from Redis cache by ID
 const deleteTaskWithUserFromCache = async (req, res) => {
     try {
         const { id } = req.params;
@@ -269,6 +283,7 @@ const deleteTaskWithUserFromCache = async (req, res) => {
     }
 };
 
+// Delete a task by ID from the database and invalidate related caches
 const deleteTaskFromDb = async (req, res) => {
     try {
         const { id } = req.params;
