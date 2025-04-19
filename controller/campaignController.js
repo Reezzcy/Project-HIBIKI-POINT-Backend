@@ -107,11 +107,11 @@ const getAllCampaignsFromCache = async (req, res) => {
     }
 };
 
-// Fetch Campaigns from Database and Cache Them
+// Fetch Campaigns from Database
 const getAllCampaignsFromDb = async (req, res) => {
     try {
         const campaigns = await Campaign.findAll({
-            include: { model: User, attributes: ['name', 'email'] }
+            include: { model: User, attributes: ['name'] }
         });
 
         if (!campaigns) {
@@ -141,12 +141,12 @@ const getCampaignByIdFromCache = async (req, res) => {
     }
 };
 
-// Fetch Campaign by ID from DB and Cache It
+// Fetch Campaign by ID from DB
 const getCampaignByIdFromDb = async (req, res) => {
     try {
         const { id } = req.params;
         const campaign = await Campaign.findByPk(id, {
-            include: { model: User, as: 'users', attributes: ['name', 'email'], through: { attributes: [] } }
+            include: { model: User, as: 'users', attributes: ['name'], through: { attributes: [] } }
         });
 
         if (!campaign) {

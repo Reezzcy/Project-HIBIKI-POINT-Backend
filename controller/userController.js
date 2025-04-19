@@ -1,4 +1,4 @@
-const { User } = require('../database/models');
+const { User, Task, Notification, Reminder, Attachment, Comment } = require('../database/models');
 
 // Function to get all users from cache
 const getUsersFromCache = async (req, res) => {
@@ -130,6 +130,84 @@ const deleteUserFromDb = async (req, res) => {
     }
 };
 
+const getUserTasks = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id, {
+            include: {
+                model: Task,
+                through: { attributes: [] },
+            }
+        });
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        return res.status(200).json({ tasks: user.Tasks });
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching tasks for user ${id}`, error: error.message });
+    }
+};
+
+const getUserNotifications = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id, {
+            include: Notification
+        });
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        return res.status(200).json({ notifications: user.Notifications });
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching notifications for user ${id}`, error: error.message });
+    }
+};
+
+const getUserReminders = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id, {
+            include: Reminder
+        });
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        return res.status(200).json({ reminders: user.Reminders });
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching reminders for user ${id}`, error: error.message });
+    }
+};
+
+const getUserComments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id, {
+            include: Comment
+        });
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        return res.status(200).json({ comments: user.Comments });
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching comments for user ${id}`, error: error.message });
+    }
+};
+
+const getUserAttachments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id, {
+            include: Attachment
+        });
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        return res.status(200).json({ attachments: user.Attachments });
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching attachments for user ${id}`, error: error.message });
+    }
+};
+
 module.exports = {
     getUsersFromCache,
     getUsersFromDb,
@@ -138,5 +216,10 @@ module.exports = {
     updateUser,
     deleteUserFromCache,
     deleteUserFromDb,
-    deleteAllUsersCache
+    deleteAllUsersCache,
+    getUserAttachments,
+    getUserComments,
+    getUserNotifications,
+    getUserTasks,
+    getUserReminders
 };

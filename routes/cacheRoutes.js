@@ -18,8 +18,12 @@ const {
 const { 
     getAllTasksFromCache,
     getTaskByIdFromCache,
+    getAllTasksWithUserFromCache,
+    getTaskByIdWithUserFromCache,
     deleteTaskFromCache,
     deleteAllTasksFromCache,
+    deleteAllTasksWithUserFromCache,
+    deleteTaskWithUserFromCache,
 } = require('../controller/taskController');
 
 // Get All Users from Cache
@@ -42,9 +46,17 @@ router.delete('/campaigns/:id', deleteCampaignFromCache);
 router.get('/tasks', getAllTasksFromCache);
 // Get Task by ID from Cache
 router.get('/tasks/:id', getTaskByIdFromCache);
+// Get Task with User from Cache
+router.get('/tasksWithUser', getAllTasksWithUserFromCache);
+// Get Task by ID with User from Cache
+router.get('/taksWithUser/:id', getTaskByIdWithUserFromCache);
 // Delete All Tasks from Cache
 router.delete('/tasks', deleteAllTasksFromCache);
 // Delete Task from Cache
 router.delete('/tasks/:id', deleteTaskFromCache);
+// Delete All Tasks with User from Cache
+router.delete('/tasksWithUser', deleteAllTasksWithUserFromCache);
+// Delete Task with User from Cache
+router.delete('/tasksWithUser/:id', deleteTaskWithUserFromCache);
 
 module.exports = router;

@@ -4,11 +4,14 @@ const {
     postTask,
     getAllTasksFromDb,
     getTaskByIdFromDb,
+    getAllTasksWithUserFromDb,
+    getTaskByIdWithUserFromDb,
     addUserToTask,
     removeUserFromTask,
     updateTask,
     deleteTaskFromDb
 } = require('../controller/taskController');
+const { route } = require('./userRoutes');
 
 const router = express.Router();
 
@@ -20,6 +23,10 @@ router.post('/addUser', addUserToTask);
 router.get('/tasks', getAllTasksFromDb);
 // Get Task by ID from DB
 router.get('/tasks/:id', getTaskByIdFromDb);
+// Get Task with User from DB
+router.get('/tasksWithUser', getAllTasksWithUserFromDb);
+// Get Task by ID with User from DB
+router.get('/taksWithUser/:id', getTaskByIdWithUserFromDb);
 // Update Task
 router.put('/tasks/:id', updateTask);
 // Delete Task from DB
