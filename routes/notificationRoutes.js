@@ -32,7 +32,9 @@ const {
 
 // Create a new notification
 router.post('/notifications', addNotification);
-// Get all notifications
+// Get all notification
+router.get('/notification', getNotification);
+// Get all notifications with include
 router.get('/notifications', getAllNotifications);
 // Get a notification by ID
 router.get('/notifications/:id', getNotificationById);
