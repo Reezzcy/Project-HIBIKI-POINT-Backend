@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
 const User = require('./user');
-const Campaign = require('./campaign');
+const Task = require('./task');
 
 const Notification = sequelize.define('Notification', {
     notification_id: {
@@ -17,12 +17,12 @@ const Notification = sequelize.define('Notification', {
             key: 'user_id'
         }
     },
-    campaign_id: {
+    task_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Campaign,
-            key: 'campaign_id'
+            model: Task,
+            key: 'task_id'
         }
     },
     title: {
