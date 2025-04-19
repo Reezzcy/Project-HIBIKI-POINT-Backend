@@ -1,12 +1,7 @@
 const redis = require('../config/redis');
-const { LogActivity, Reminder, Comment } = require('../database/models');
 const moment = require('moment-timezone');
 const { User } = require('../database/models');
 const { Notification } = require('../database/models');
-const { sendEmail } = require('../utils/emailService');
-const { sendPushNotification } = require('../utils/pushNotificationService');
-const { sendWhatsAppMessage } = require('../utils/whatsappService');
-const { sendSMS } = require('../utils/smsService');
 
 // Function to add a notification to the cache and database
 const addNotification = async (req, res) => {

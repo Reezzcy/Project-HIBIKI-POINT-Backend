@@ -1,4 +1,4 @@
-const redis = require('../config/redisConfig');
+const redis = require('../config/redis');
 const { Reminder, User } = require('../database/models');
 
 // This function adds a reminder to the Redis cache and the database

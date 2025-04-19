@@ -1,6 +1,9 @@
 const express = require('express');
 const routes = require('./routes');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./docs/swagger-output.json');
+
 require('dotenv').config();
 const db = require('./config/db');
 const redisClient = require('./config/redis');
@@ -16,6 +19,9 @@ server.use(express.json());
 db.sync({ alter: true })
     .then(() => console.log('Database & tables created!'))
     .catch((err) => console.error('Error syncing database:', err));
+
+// Swagger Docs
+server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // Routing
 server.use(routes);
