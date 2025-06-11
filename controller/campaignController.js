@@ -4,25 +4,57 @@ const redis = require('../config/redis');
 // Create Campaign
 const postCampaign = async (req, res) => {
     try {
-        const { user_id, title, description, budget, status, start_date, end_date } = req.body;
+        const {
+            user_id,
+            title,
+            description,
+            budget,
+            status,
+            start_date,
+            end_date,
+        } = req.body;
 
-        if (!user_id || !title || !description || !budget || !status || !start_date || !end_date) {
-            return res.status(400).json({ message: "All fields are required!" });
+        if (
+            !user_id ||
+            !title ||
+            !description ||
+            !budget ||
+            !status ||
+            !start_date ||
+            !end_date
+        ) {
+            return res
+                .status(400)
+                .json({ message: 'All fields are required!' });
         }
 
         const user = await User.findByPk(user_id);
 
         if (!user) {
-            return res.status(404).json({ message: "User not found!" });
+            return res.status(404).json({ message: 'User not found!' });
         }
 
-        const newCampaign = await Campaign.create({ user_id, title, description, budget, status, start_date, end_date });
+        const newCampaign = await Campaign.create({
+            user_id,
+            title,
+            description,
+            budget,
+            status,
+            start_date,
+            end_date,
+        });
         await user.addCampaign(newCampaign);
 
         await redis.del('all_campaigns');
-        return res.status(201).json({ message: "Campaign created successfully!", campaign: newCampaign });
+        return res.status(201).json({
+            message: 'Campaign created successfully!',
+            campaign: newCampaign,
+        });
     } catch (error) {
-        res.status(500).json({ message: "Error creating campaign", error: error.message });
+        res.status(500).json({
+            message: 'Error creating campaign',
+            error: error.message,
+        });
     }
 };
 
@@ -35,16 +67,23 @@ const addUserToCampaign = async (req, res) => {
         const campaign = await Campaign.findByPk(campaign_id);
 
         if (!user || !campaign) {
-            return res.status(404).json({ message: "User or Campaign not found!" });
+            return res
+                .status(404)
+                .json({ message: 'User or Campaign not found!' });
         }
 
         await user.addCampaign(campaign);
 
         await redis.del(`campaign_${campaign_id}`);
         await redis.del('all_campaigns');
-        return res.status(200).json({ message: "User added to campaign successfully!" });
+        return res
+            .status(200)
+            .json({ message: 'User added to campaign successfully!' });
     } catch (error) {
-        res.status(500).json({ message: "Error adding user to campaign", error: error.message });
+        res.status(500).json({
+            message: 'Error adding user to campaign',
+            error: error.message,
+        });
     }
 };
 
@@ -52,21 +91,34 @@ const addUserToCampaign = async (req, res) => {
 const updateCampaign = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, budget, status, start_date, end_date } = req.body;
+        const { title, description, budget, status, start_date, end_date } =
+            req.body;
 
         const campaign = await Campaign.findByPk(id);
 
         if (!campaign) {
-            return res.status(404).json({ message: "Campaign not found" });
+            return res.status(404).json({ message: 'Campaign not found' });
         }
 
-        await campaign.update({ title, description, budget, status, start_date, end_date });
+        await campaign.update({
+            title,
+            description,
+            budget,
+            status,
+            start_date,
+            end_date,
+        });
 
         await redis.del(`campaign_${id}`);
         await redis.del('all_campaigns');
-        return res.status(200).json({ message: "Campaign updated successfully", campaign });
+        return res
+            .status(200)
+            .json({ message: 'Campaign updated successfully', campaign });
     } catch (error) {
-        res.status(500).json({ message: "Error updating campaign", error: error.message });
+        res.status(500).json({
+            message: 'Error updating campaign',
+            error: error.message,
+        });
     }
 };
 
@@ -79,16 +131,23 @@ const removeUserFromCampaign = async (req, res) => {
         const campaign = await Campaign.findByPk(campaign_id);
 
         if (!user || !campaign) {
-            return res.status(404).json({ message: "User or Campaign not found!" });
+            return res
+                .status(404)
+                .json({ message: 'User or Campaign not found!' });
         }
 
         await user.removeCampaign(campaign);
 
         await redis.del(`campaign_${campaign_id}`);
         await redis.del('all_campaigns');
-        return res.status(200).json({ message: "User removed from campaign successfully!" });
+        return res
+            .status(200)
+            .json({ message: 'User removed from campaign successfully!' });
     } catch (error) {
-        res.status(500).json({ message: "Error removing user from campaign", error: error.message });
+        res.status(500).json({
+            message: 'Error removing user from campaign',
+            error: error.message,
+        });
     }
 };
 
@@ -101,9 +160,14 @@ const getAllCampaignsFromCache = async (req, res) => {
             return res.status(200).json(JSON.parse(cachedCampaigns));
         }
 
-        return res.status(404).json({ message: 'Campaigns not found in cache' });
+        return res
+            .status(404)
+            .json({ message: 'Campaigns not found in cache' });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching from cache', error: error.message });
+        res.status(500).json({
+            message: 'Error fetching from cache',
+            error: error.message,
+        });
     }
 };
 
@@ -111,7 +175,14 @@ const getAllCampaignsFromCache = async (req, res) => {
 const getAllCampaignsFromDb = async (req, res) => {
     try {
         const campaigns = await Campaign.findAll({
-            include: { model: User, attributes: ['name'] }
+            include: [
+                {
+                    model: User,
+                    attributes: ['name'],
+                    as: 'users',
+                    through: { attributes: [] },
+                },
+            ],
         });
 
         if (!campaigns) {
@@ -121,7 +192,10 @@ const getAllCampaignsFromDb = async (req, res) => {
         await redis.set('all_campaigns', JSON.stringify(campaigns), 'EX', 3600);
         return res.status(200).json(campaigns);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching from DB', error: error.message });
+        res.status(500).json({
+            message: 'Error fetching from DB',
+            error: error.message,
+        });
     }
 };
 
@@ -137,7 +211,10 @@ const getCampaignByIdFromCache = async (req, res) => {
 
         return res.status(404).json({ message: 'Campaign not found in cache' });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching from cache', error: error.message });
+        res.status(500).json({
+            message: 'Error fetching from cache',
+            error: error.message,
+        });
     }
 };
 
@@ -146,17 +223,25 @@ const getCampaignByIdFromDb = async (req, res) => {
     try {
         const { id } = req.params;
         const campaign = await Campaign.findByPk(id, {
-            include: { model: User, as: 'users', attributes: ['name'], through: { attributes: [] } }
+            include: {
+                model: User,
+                as: 'users',
+                attributes: ['name'],
+                through: { attributes: [] },
+            },
         });
 
         if (!campaign) {
-            return res.status(404).json({ message: "Campaign not found" });
+            return res.status(404).json({ message: 'Campaign not found' });
         }
 
         await redis.set(`campaign_${id}`, JSON.stringify(campaign), 'EX', 3600);
         res.status(200).json(campaign);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching from DB', error: error.message });
+        res.status(500).json({
+            message: 'Error fetching from DB',
+            error: error.message,
+        });
     }
 };
 
@@ -168,12 +253,17 @@ const deleteCampaignFromCache = async (req, res) => {
 
         if (cachedCampaign) {
             await redis.del(`campaign_${id}`);
-            return res.status(200).json({ message: `Campaign with ID ${id} deleted successfully` });
+            return res.status(200).json({
+                message: `Campaign with ID ${id} deleted successfully`,
+            });
         }
 
         return res.status(404).json({ message: `Campaign not found` });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting campaign from DB', error: error.message });
+        res.status(500).json({
+            message: 'Error deleting campaign from DB',
+            error: error.message,
+        });
     }
 };
 
@@ -184,12 +274,19 @@ const deleteAllCampaignsFromCache = async (req, res) => {
 
         if (cachedCampaigns) {
             await redis.del('all_campaigns');
-            return res.status(200).json({ message: 'All campaigns cache deleted successfully' });
+            return res
+                .status(200)
+                .json({ message: 'All campaigns cache deleted successfully' });
         }
 
-        return res.status(404).json({ message: 'No cache found for all campaigns' });
+        return res
+            .status(404)
+            .json({ message: 'No cache found for all campaigns' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting campaign from DB', error: error.message });
+        res.status(500).json({
+            message: 'Error deleting campaign from DB',
+            error: error.message,
+        });
     }
 };
 
@@ -204,9 +301,14 @@ const deleteCampaignFromDb = async (req, res) => {
         }
 
         await campaign.destroy();
-        return res.status(200).json({ message: `Campaign with ID ${id} deleted successfully` });
+        return res
+            .status(200)
+            .json({ message: `Campaign with ID ${id} deleted successfully` });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting campaign from DB', error: error.message });
+        res.status(500).json({
+            message: 'Error deleting campaign from DB',
+            error: error.message,
+        });
     }
 };
 
@@ -221,5 +323,5 @@ module.exports = {
     getCampaignByIdFromDb,
     deleteCampaignFromCache,
     deleteAllCampaignsFromCache,
-    deleteCampaignFromDb
+    deleteCampaignFromDb,
 };

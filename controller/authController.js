@@ -1,4 +1,5 @@
 const { Auth, User } = require('../database/models');
+const { OAuth2Client } = require('google-auth-library'); // Library untuk verifikasi
 const { sendNotificationEmail } = require('../service/emailService');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -185,8 +186,122 @@ const tokenChecker = (req, res, next) => {
     }
 };
 
+// Login with google
+// Inisialisasi klien HANYA untuk verifikasi ID Token
+const verifierClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const googleLogin = async (req, res) => {
+    try {
+        const { id_token } = req.body;
+        if (!id_token) {
+            return res
+                .status(400)
+                .json({ message: 'ID Token tidak ditemukan.' });
+        }
+
+        const ticket = await verifierClient.verifyIdToken({
+            idToken: id_token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const { email, name } = ticket.getPayload();
+
+        let auth = await Auth.findOne({
+            where: { email },
+            include: [
+                {
+                    model: User,
+                    as: 'User', // Sesuai dengan alias Anda
+                },
+            ],
+        });
+
+        if (!auth) {
+            const newUser = await User.create({
+                name: name,
+                status: 'Active',
+            });
+
+            const newAuth = await Auth.create({
+                email: email,
+                password: null,
+                user_id: newUser.user_id,
+            });
+
+            auth = await Auth.findOne({
+                where: { auth_id: newAuth.auth_id },
+                include: [
+                    {
+                        model: User,
+                        as: 'User', // Sesuai dengan alias Anda
+                    },
+                ],
+            });
+        }
+
+        // --- INI PERBAIKAN UTAMANYA ---
+        // Akses properti menggunakan nama alias yang benar: "User" (U besar)
+        const payload = {
+            id: auth.user_id,
+            email: auth.email,
+            name: auth.User.name, // DIUBAH DARI auth.user.name
+        };
+
+        const appToken = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRED || '1d',
+        });
+
+        res.status(200).json({
+            status: 'Success',
+            message: 'Login dengan Google berhasil.',
+            data: {
+                token: appToken,
+                user: payload,
+            },
+        });
+    } catch (error) {
+        console.error('Error pada Google login:', error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Otentikasi gagal.',
+            error: error.message,
+        });
+    }
+};
+
+// Google Callback
+const oauth2Client = require('../config/googleAuth');
+
+const googleCallback = async (req, res, next) => {
+    try {
+        // Dapatkan 'code' yang diberikan Google setelah redirect
+        const { code } = req.query;
+
+        // Tukarkan 'code' dengan tokens (access_token dan refresh_token)
+        const { tokens } = await oauth2Client.getToken(code);
+
+        // Simpan tokens.access_token dan tokens.refresh_token ini ke database
+        // yang terhubung dengan user. INI SANGAT PENTING!
+        // Contoh: await User.update({
+        //    google_access_token: tokens.access_token,
+        //    google_refresh_token: tokens.refresh_token
+        // }, { where: { email: user_email } });
+
+        // Sekarang, Anda bisa mengarahkan user kembali ke frontend Anda
+        res.redirect('http://localhost:5173/dashboard');
+    } catch (error) {
+        console.error('Google callback error:', error);
+        res.status(500).json({
+            message: 'Callback failed',
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
     tokenChecker,
+    googleLogin,
+    googleCallback,
 };

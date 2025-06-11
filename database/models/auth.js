@@ -22,7 +22,7 @@ const Auth = sequelize.define(
         },
         password: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
             validate: {
                 len: [6, 100],
             },
