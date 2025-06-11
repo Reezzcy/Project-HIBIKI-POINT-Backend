@@ -46,12 +46,10 @@ const postCampaign = async (req, res) => {
         });
         await user.addCampaign(newCampaign);
 
-        console.log('user_id', user_id);
-
-        await saveLogActivity({
+        saveLog = await saveLogActivity({
             user_id: user_id,
             activity_type: 'create campaign',
-            description: `Created a new campaign with title: ${title}`,
+            activity_description: `Created a new campaign with title: ${title}`,
         });
 
         await redis.del('all_campaigns');

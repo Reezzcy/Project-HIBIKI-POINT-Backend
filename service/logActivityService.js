@@ -1,30 +1,30 @@
 // Anda bisa letakkan ini di file terpisah, misal: services/logActivityService.js
 const redis = require('../config/redis'); // Sesuaikan path ke koneksi redis Anda
-const moment = require('moment-timezone');
+const { LogActivity } = require('../database/models'); // Import model LogActivity
 
 const saveLogActivity = async (logData) => {
     try {
-        const { user_id, activity_type, description } = logData;
+        const { user_id, activity_type, activity_description } = logData;
 
         // 1. Validasi input
-        if (!user_id || !activity_type || !description) {
+        if (!user_id || !activity_type || !activity_description) {
             // Lemparkan error agar bisa ditangkap oleh pemanggil fungsi
             throw new Error(
-                'user_id, activity_type, and description are required!'
+                'user_id, activity_type, and activity_description are required!'
             );
         }
 
         // 2. Buat objek log
         const logActivityData = {
-            user_id,
-            activity_type,
-            description,
-            created_at: moment()
-                .tz('Asia/Jakarta')
-                .format('YYYY-MM-DD HH:mm:ss'), // Menggunakan zona waktu Jakarta
+            user_id: user_id,
+            activity_type: activity_type,
+            activity_description: activity_description, // Ubah ke activity_description sesuai model
         };
 
-        // 3. Simpan ke Redis
+        // 3. Simpan ke Database terlebih dahulu
+        await LogActivity.create(logActivityData);
+
+        // 4. Simpan ke Redis
         await redis.set(
             `log_activity_${user_id}_${Date.now()}`, // Gunakan key yang lebih unik
             JSON.stringify(logActivityData),
