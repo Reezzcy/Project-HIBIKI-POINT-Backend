@@ -1,5 +1,6 @@
 const { Campaign, User } = require('../database/models');
 const redis = require('../config/redis');
+const { saveLogActivity } = require('../service/logActivityService');
 
 // Create Campaign
 const postCampaign = async (req, res) => {
@@ -44,6 +45,14 @@ const postCampaign = async (req, res) => {
             end_date,
         });
         await user.addCampaign(newCampaign);
+
+        console.log('user_id', user_id);
+
+        await saveLogActivity({
+            user_id: user_id,
+            activity_type: 'create campaign',
+            description: `Created a new campaign with title: ${title}`,
+        });
 
         await redis.del('all_campaigns');
         return res.status(201).json({
