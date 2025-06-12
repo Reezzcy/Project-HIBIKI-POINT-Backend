@@ -19,6 +19,12 @@ const addComment = async (req, res) => {
             comment_text,
         };
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'add_comment',
+            details: `Comment added: ${comment_text}`,
+        });
+
         // Save to Redis cache
         await redis.set(
             `comment_${user_id}`,
@@ -136,6 +142,12 @@ const updateComment = async (req, res) => {
 
         await comment.update({ user_id, comment_text });
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'update_comment',
+            details: `Comment updated: ${comment_text}`,
+        });
+
         res.status(200).json(comment);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -153,6 +165,12 @@ const deleteComment = async (req, res) => {
         }
 
         await comment.destroy();
+
+        saveLog = await saveLogActivity({
+            user_id: comment.user_id,
+            action: 'delete_comment',
+            details: `Comment deleted with ID: ${id}`,
+        });
 
         res.status(200).json({ message: 'Comment deleted successfully!' });
     } catch (error) {

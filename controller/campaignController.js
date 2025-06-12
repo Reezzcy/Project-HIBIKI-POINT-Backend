@@ -81,6 +81,12 @@ const addUserToCampaign = async (req, res) => {
 
         await user.addCampaign(campaign);
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            activity_type: 'add user to campaign',
+            activity_description: `Added user with ID ${user_id} to campaign with ID ${campaign_id}`,
+        });
+
         await redis.del(`campaign_${campaign_id}`);
         await redis.del('all_campaigns');
         return res
@@ -116,6 +122,12 @@ const updateCampaign = async (req, res) => {
             end_date,
         });
 
+        saveLog = await saveLogActivity({
+            user_id: campaign.user_id,
+            activity_type: 'update campaign',
+            activity_description: `Updated campaign with ID ${id}`,
+        });
+
         await redis.del(`campaign_${id}`);
         await redis.del('all_campaigns');
         return res
@@ -144,6 +156,12 @@ const removeUserFromCampaign = async (req, res) => {
         }
 
         await user.removeCampaign(campaign);
+
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            activity_type: 'remove user from campaign',
+            activity_description: `Removed user with ID ${user_id} from campaign with ID ${campaign_id}`,
+        });
 
         await redis.del(`campaign_${campaign_id}`);
         await redis.del('all_campaigns');
@@ -308,6 +326,13 @@ const deleteCampaignFromDb = async (req, res) => {
         }
 
         await campaign.destroy();
+
+        saveLog = await saveLogActivity({
+            user_id: campaign.user_id,
+            activity_type: 'delete campaign',
+            activity_description: `Deleted campaign with ID ${id}`,
+        });
+
         return res
             .status(200)
             .json({ message: `Campaign with ID ${id} deleted successfully` });

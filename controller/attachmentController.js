@@ -19,6 +19,12 @@ const addAttachment = async (req, res) => {
             attachment_url,
         };
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'add_attachment',
+            details: `Attachment added with URL: ${attachment_url}`,
+        });
+
         // Save to Redis cache
         await redis.set(
             `attachment_${user_id}`,
@@ -123,6 +129,12 @@ const updateAttachmentInDb = async (req, res) => {
         attachment.attachment_url = attachment_url;
         await attachment.save();
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'update_attachment',
+            details: `Attachment updated with URL: ${attachment_url}`,
+        });
+
         res.status(200).json({
             message: 'Attachment updated successfully!',
             attachment,
@@ -144,6 +156,12 @@ const deleteAttachmentFromDb = async (req, res) => {
         }
 
         await attachment.destroy();
+
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'delete_attachment',
+            details: `Attachment deleted for user ID: ${user_id}`,
+        });
 
         res.status(200).json({ message: 'Attachment deleted successfully!' });
     } catch (error) {

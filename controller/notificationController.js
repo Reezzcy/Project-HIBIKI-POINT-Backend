@@ -25,6 +25,12 @@ const addNotification = async (req, res) => {
                 .format('YYYY-MM-DD HH:mm:ss'),
         };
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'add_notification',
+            details: `Notification added: ${notification_message}`,
+        });
+
         // Save to Redis cache
         await redis.set(
             `notification_${user_id}`,
@@ -168,6 +174,12 @@ const updateNotification = async (req, res) => {
 
         await notification.update({ notification_type, notification_message });
 
+        saveLog = await saveLogActivity({
+            user_id: notification.user_id,
+            action: 'update_notification',
+            details: `Notification updated: ${notification_message}`,
+        });
+
         res.status(200).json(notification);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -185,6 +197,12 @@ const deleteNotification = async (req, res) => {
         }
 
         await notification.destroy();
+
+        saveLog = await saveLogActivity({
+            user_id: notification.user_id,
+            action: 'delete_notification',
+            details: `Notification deleted: ${notification.notification_message}`,
+        });
 
         res.status(200).json({ message: 'Notification deleted successfully' });
     } catch (error) {
@@ -220,6 +238,12 @@ const sendNotification = async (req, res) => {
 
         // Send SMS
         await sendSMS(user.phone_number, notification_message);
+
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'send_notification',
+            details: `Notification sent: ${notification_message}`,
+        });
 
         res.status(200).json({ message: 'Notification sent successfully!' });
     } catch (error) {

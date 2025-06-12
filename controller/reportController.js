@@ -9,7 +9,13 @@ postReport = async (req, res) => {
             campaign_id,
             total_reach,
             roi,
-            report_date
+            report_date,
+        });
+
+        saveLog = await saveLogActivity({
+            user_id: req.user.id, // Assuming req.user contains the authenticated user's info
+            action: 'create_report',
+            details: `Report created for campaign ID: ${campaign_id}`,
         });
 
         res.status(201).json(newReport);
@@ -24,8 +30,8 @@ getAllReports = async (req, res) => {
         const reports = await Report.findAll({
             include: {
                 model: Campaign,
-                attributes: ['campaign_id', 'title']
-            }
+                attributes: ['campaign_id', 'title'],
+            },
         });
 
         res.status(200).json(reports);
@@ -43,12 +49,12 @@ getReportById = async (req, res) => {
             where: { report_id: id },
             include: {
                 model: Campaign,
-                attributes: ['campaign_id', 'title']
-            }
+                attributes: ['campaign_id', 'title'],
+            },
         });
 
         if (!report) {
-            return res.status(404).json({ message: "Report not found" });
+            return res.status(404).json({ message: 'Report not found' });
         }
 
         res.status(200).json(report);
@@ -65,10 +71,16 @@ updateReport = async (req, res) => {
 
         const report = await Report.findByPk(id);
         if (!report) {
-            return res.status(404).json({ message: "Report not found" });
+            return res.status(404).json({ message: 'Report not found' });
         }
 
         await report.update({ total_reach, roi, report_date });
+
+        saveLog = await saveLogActivity({
+            user_id: req.user.id, // Assuming req.user contains the authenticated user's info
+            action: 'update_report',
+            details: `Report updated for campaign ID: ${report.campaign_id}`,
+        });
 
         res.status(200).json(report);
     } catch (error) {
@@ -83,12 +95,18 @@ deleteReport = async (req, res) => {
 
         const report = await Report.findByPk(id);
         if (!report) {
-            return res.status(404).json({ message: "Report not found" });
+            return res.status(404).json({ message: 'Report not found' });
         }
 
         await report.destroy();
 
-        res.status(200).json({ message: "Report deleted successfully" });
+        saveLog = await saveLogActivity({
+            user_id: req.user.id, // Assuming req.user contains the authenticated user's info
+            action: 'delete_report',
+            details: `Report deleted with ID: ${id}`,
+        });
+
+        res.status(200).json({ message: 'Report deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -99,5 +117,5 @@ module.exports = {
     getAllReports,
     getReportById,
     updateReport,
-    deleteReport
+    deleteReport,
 };
