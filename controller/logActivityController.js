@@ -159,6 +159,12 @@ const deleteLogActivityFromDb = async (req, res) => {
             where: { user_id },
         });
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            activity_type: 'delete',
+            description: `Log activity for user ${user_id} deleted`,
+        });
+
         if (!deleted) {
             return res.status(404).json({ message: 'Log activity not found' });
         }
@@ -192,6 +198,12 @@ const updateLogActivity = async (req, res) => {
         }
 
         await logActivity.update({ activity_type, description });
+
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            activity_type: 'update',
+            description: `Log activity for user ${user_id} updated`,
+        });
 
         res.status(200).json(logActivity);
     } catch (error) {
@@ -239,6 +251,13 @@ const getAllLogActivities = async (req, res) => {
 const deleteAllLogActivities = async (req, res) => {
     try {
         await LogActivity.destroy({ where: {}, truncate: true });
+
+        saveLog = await saveLogActivity({
+            user_id: null,
+            activity_type: 'delete_all',
+            description: 'All log activities deleted',
+        });
+
         res.status(200).json({
             message: 'All log activities deleted successfully',
         });
@@ -254,6 +273,12 @@ const deleteLogActivityById = async (req, res) => {
 
         const deleted = await LogActivity.destroy({
             where: { log_activity_id: id },
+        });
+
+        saveLog = await saveLogActivity({
+            user_id: id,
+            activity_type: 'delete',
+            description: `Log activity with ID ${id} deleted`,
         });
 
         if (!deleted) {
@@ -273,6 +298,12 @@ const deleteLogActivityByUserId = async (req, res) => {
 
         const deleted = await LogActivity.destroy({
             where: { user_id },
+        });
+
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            activity_type: 'delete',
+            description: `Log activity for user ${user_id} deleted`,
         });
 
         if (!deleted) {
@@ -307,6 +338,12 @@ const deleteLogActivityByDate = async (req, res) => {
                     ],
                 },
             },
+        });
+
+        saveLog = await saveLogActivity({
+            user_id: null,
+            activity_type: 'delete_by_date',
+            description: `Log activities deleted from ${start_date} to ${end_date}`,
         });
 
         if (!deleted) {

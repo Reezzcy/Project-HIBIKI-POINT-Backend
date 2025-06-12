@@ -1,4 +1,11 @@
-const { User, Task, Notification, Reminder, Attachment, Comment } = require('../database/models');
+const {
+    User,
+    Task,
+    Notification,
+    Reminder,
+    Attachment,
+    Comment,
+} = require('../database/models');
 
 // Function to get all users from cache
 const getUsersFromCache = async (req, res) => {
@@ -9,9 +16,14 @@ const getUsersFromCache = async (req, res) => {
             return res.status(200).json(JSON.parse(cachedUsers));
         }
 
-        return res.status(200).json({ message: 'Cache miss for users', users: [] });
+        return res
+            .status(200)
+            .json({ message: 'Cache miss for users', users: [] });
     } catch (error) {
-        res.status(500).json({ message: `Error fetching from cache for users: ${error.message}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching from cache for users: ${error.message}`,
+            error: error.message,
+        });
     }
 };
 
@@ -24,7 +36,7 @@ const getUsersFromDb = async (req, res) => {
             await redis.set('all_users', JSON.stringify(users), 'EX', 3600);
 
             if (users.length === 0) {
-                return res.status(200).json([]);  // Return empty array if no users
+                return res.status(200).json([]); // Return empty array if no users
             }
 
             return res.status(200).json(users);
@@ -32,7 +44,10 @@ const getUsersFromDb = async (req, res) => {
 
         return res.status(404).json({ message: 'Users not found' });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching from DB', error: error.message });
+        res.status(500).json({
+            message: 'Error fetching from DB',
+            error: error.message,
+        });
     }
 };
 
@@ -46,9 +61,14 @@ const getUserByIdFromCache = async (req, res) => {
             return res.status(200).json(JSON.parse(cachedUser));
         }
 
-        return res.status(404).json({ message: `User with ID ${id} not found in cache` });
+        return res
+            .status(404)
+            .json({ message: `User with ID ${id} not found in cache` });
     } catch (error) {
-        res.status(500).json({ message: `Error fetching user with ID ${id} from cache: ${error.message}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching user with ID ${id} from cache: ${error.message}`,
+            error: error.message,
+        });
     }
 };
 
@@ -65,7 +85,10 @@ const getUserByIdFromDb = async (req, res) => {
         await redis.set(`user_${id}`, JSON.stringify(user), 'EX', 3600);
         return res.status(200).json(user);
     } catch (error) {
-        res.status(500).json({ message: `Error fetching user with ID ${id} from DB: ${error.message}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching user with ID ${id} from DB: ${error.message}`,
+            error: error.message,
+        });
     }
 };
 
@@ -82,10 +105,19 @@ const updateUser = async (req, res) => {
 
         await user.update(req.body);
 
+        saveLog = await saveLogActivity({
+            user_id: req.user.id, // Assuming req.user contains the authenticated user's info
+            action: 'update_user',
+            details: `User updated with ID: ${id}`,
+        });
+
         await redis.del(`user_${id}`);
         return res.status(200).json(user);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating user', error: error.message });
+        res.status(500).json({
+            message: 'Error updating user',
+            error: error.message,
+        });
     }
 };
 
@@ -95,9 +127,14 @@ const deleteUserFromCache = async (req, res) => {
         const { id } = req.params;
 
         await redis.del(`user_${id}`);
-        return res.status(200).json({ message: `User cache for ID ${id} deleted successfully` });
+        return res
+            .status(200)
+            .json({ message: `User cache for ID ${id} deleted successfully` });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting from cache', error: error.message });
+        res.status(500).json({
+            message: 'Error deleting from cache',
+            error: error.message,
+        });
     }
 };
 
@@ -105,9 +142,14 @@ const deleteUserFromCache = async (req, res) => {
 const deleteAllUsersCache = async (req, res) => {
     try {
         await redis.del('all_users');
-        return res.status(200).json({ message: 'All users cache deleted successfully' });
+        return res
+            .status(200)
+            .json({ message: 'All users cache deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting all users from cache', error: error.message });
+        res.status(500).json({
+            message: 'Error deleting all users from cache',
+            error: error.message,
+        });
     }
 };
 
@@ -123,10 +165,21 @@ const deleteUserFromDb = async (req, res) => {
 
         await user.destroy();
 
+        saveLog = await saveLogActivity({
+            user_id: req.user.id, // Assuming req.user contains the authenticated user's info
+            action: 'delete_user',
+            details: `User deleted with ID: ${id}`,
+        });
+
         await redis.del(`user_${id}`);
-        return res.status(200).json({ message: `User with ID ${id} deleted successfully` });
+        return res
+            .status(200)
+            .json({ message: `User with ID ${id} deleted successfully` });
     } catch (error) {
-        res.status(500).json({ message: `Error deleting user with ID ${id} from DB: ${error.message}`, error: error.message });
+        res.status(500).json({
+            message: `Error deleting user with ID ${id} from DB: ${error.message}`,
+            error: error.message,
+        });
     }
 };
 
@@ -138,14 +191,17 @@ const getUserTasks = async (req, res) => {
             include: {
                 model: Task,
                 through: { attributes: [] },
-            }
+            },
         });
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         return res.status(200).json({ tasks: user.Tasks });
     } catch (error) {
-        res.status(500).json({ message: `Error fetching tasks for user ${id}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching tasks for user ${id}`,
+            error: error.message,
+        });
     }
 };
 
@@ -154,14 +210,17 @@ const getUserNotifications = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id, {
-            include: Notification
+            include: Notification,
         });
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         return res.status(200).json({ notifications: user.Notifications });
     } catch (error) {
-        res.status(500).json({ message: `Error fetching notifications for user ${id}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching notifications for user ${id}`,
+            error: error.message,
+        });
     }
 };
 
@@ -170,14 +229,17 @@ const getUserReminders = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id, {
-            include: Reminder
+            include: Reminder,
         });
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         return res.status(200).json({ reminders: user.Reminders });
     } catch (error) {
-        res.status(500).json({ message: `Error fetching reminders for user ${id}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching reminders for user ${id}`,
+            error: error.message,
+        });
     }
 };
 
@@ -186,14 +248,17 @@ const getUserComments = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id, {
-            include: Comment
+            include: Comment,
         });
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         return res.status(200).json({ comments: user.Comments });
     } catch (error) {
-        res.status(500).json({ message: `Error fetching comments for user ${id}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching comments for user ${id}`,
+            error: error.message,
+        });
     }
 };
 
@@ -202,14 +267,17 @@ const getUserAttachments = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id, {
-            include: Attachment
+            include: Attachment,
         });
 
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         return res.status(200).json({ attachments: user.Attachments });
     } catch (error) {
-        res.status(500).json({ message: `Error fetching attachments for user ${id}`, error: error.message });
+        res.status(500).json({
+            message: `Error fetching attachments for user ${id}`,
+            error: error.message,
+        });
     }
 };
 
@@ -226,5 +294,5 @@ module.exports = {
     getUserComments,
     getUserNotifications,
     getUserTasks,
-    getUserReminders
+    getUserReminders,
 };

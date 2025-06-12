@@ -19,6 +19,12 @@ const addReminder = async (req, res) => {
             reminder_text,
         };
 
+        saveLog = await saveLogActivity({
+            user_id: user_id,
+            action: 'add_reminder',
+            details: `Reminder added: ${reminder_text}`,
+        });
+
         // Save to Redis cache
         await redis.set(
             `reminder_${user_id}`,
@@ -110,6 +116,12 @@ const updateReminder = async (req, res) => {
 
         await reminder.update({ reminder_text });
 
+        saveLog = await saveLogActivity({
+            user_id: reminder.user_id,
+            action: 'update_reminder',
+            details: `Reminder updated: ${reminder_text}`,
+        });
+
         res.status(200).json(reminder);
     } catch (error) {
         res.status(500).json({
@@ -129,6 +141,13 @@ const deleteReminder = async (req, res) => {
         }
 
         await reminder.destroy();
+
+        saveLog = await saveLogActivity({
+            user_id: reminder.user_id,
+            action: 'delete_reminder',
+            details: `Reminder deleted with ID: ${id}`,
+        });
+
         res.status(200).json({ message: 'Reminder deleted successfully' });
     } catch (error) {
         res.status(500).json({

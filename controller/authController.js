@@ -3,6 +3,7 @@ const { OAuth2Client } = require('google-auth-library'); // Library untuk verifi
 const { sendNotificationEmail } = require('../service/emailService');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { saveLogActivity } = require('../service/logActivityService');
 
 // This function handles user registration
 const register = async (req, res, next) => {
@@ -45,6 +46,12 @@ const register = async (req, res, next) => {
             email,
             password: hashedPassword,
             user_id: newUser.user_id,
+        });
+
+        saveLog = await saveLogActivity({
+            user_id: newUser.user_id,
+            activity_type: 'register',
+            activity_description: `User registered with email: ${email}`,
         });
 
         // Generate a JWT token for the user
@@ -131,6 +138,12 @@ const login = async (req, res, next) => {
             }
         );
 
+        saveLog = await saveLogActivity({
+            user_id: auth.user_id,
+            activity_type: 'login',
+            activity_description: `User logged in with email: ${auth.email}`,
+        });
+
         // Update the auth record with the new token
         const recipientEmail = auth.email;
         const subject = 'Aktivitas Login Baru di Akun Anda';
@@ -211,7 +224,7 @@ const googleLogin = async (req, res) => {
             include: [
                 {
                     model: User,
-                    as: 'User', // Sesuai dengan alias Anda
+                    as: 'User',
                 },
             ],
         });
@@ -233,22 +246,26 @@ const googleLogin = async (req, res) => {
                 include: [
                     {
                         model: User,
-                        as: 'User', // Sesuai dengan alias Anda
+                        as: 'User',
                     },
                 ],
             });
         }
 
-        // --- INI PERBAIKAN UTAMANYA ---
-        // Akses properti menggunakan nama alias yang benar: "User" (U besar)
         const payload = {
             id: auth.user_id,
             email: auth.email,
-            name: auth.User.name, // DIUBAH DARI auth.user.name
+            name: auth.User.name,
         };
 
         const appToken = jwt.sign(payload, process.env.JWT_SECRET, {
             expiresIn: process.env.JWT_EXPIRED || '1d',
+        });
+
+        saveLog = await saveLogActivity({
+            user_id: auth.user_id,
+            activity_type: 'google_login',
+            activity_description: `User logged in with Google using email: ${email}`,
         });
 
         res.status(200).json({
@@ -269,7 +286,7 @@ const googleLogin = async (req, res) => {
     }
 };
 
-// Google Callback
+// Google Callback to access any of their Google services (like their calendar, contacts, drive, etc.)
 const oauth2Client = require('../config/googleAuth');
 
 const googleCallback = async (req, res, next) => {
