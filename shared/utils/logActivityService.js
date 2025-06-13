@@ -1,6 +1,6 @@
 // Anda bisa letakkan ini di file terpisah, misal: services/logActivityService.js
 const redis = require('../config/redis'); // Sesuaikan path ke koneksi redis Anda
-const { LogActivity } = require('../database/models'); // Import model LogActivity
+const { LogActivity } = require(''); // Import model LogActivity
 
 const saveLogActivity = async (logData) => {
     try {

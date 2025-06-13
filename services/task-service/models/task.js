@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../../shared/config/db');
+const sequelize = require('../../../shared/config/db');
 const Campaign = require('./campaign');
-const User = require('./user');
+const User = require('../../../database/models/user');
 
 // Model Task
 // Model ini merepresentasikan tabel task di database

@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../../config/db');
 const User = require('./user');
-const Task = require('./task');
+const Task = require('../../services/task-service/models/task');
 
 // Model UserTask
 // Model ini merepresentasikan tabel user_task di database

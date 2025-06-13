@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../../config/db');
-const User = require('./user');
+const sequelize = require('../../../shared/config/db');
+const UserCache = require('./userCache');
 
 // Model Campaign
 // Model ini merepresentasikan tabel campaign di database
@@ -16,7 +16,7 @@ const Campaign = sequelize.define(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: User,
+                model: UserCache,
                 key: 'user_id',
             },
         },

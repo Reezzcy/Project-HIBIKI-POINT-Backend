@@ -11,7 +11,7 @@ const {
     updateTask,
     deleteTaskFromDb
 } = require('../controller/taskController');
-const { route } = require('./userRoutes');
+const { route } = require('../../user-service/routes/userRoutes');
 
 const router = express.Router();
 

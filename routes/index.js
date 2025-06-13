@@ -3,18 +3,18 @@ const express = require('express');
 const { apiLimiter, loginLimiter } = require('../middleware/rateLimiter');
 const { apiThrottle } = require('../middleware/throttling');
 
-const authRoutes = require('./authRoutes');
-const userRoutes = require('./userRoutes');
-const campaignRoutes = require('./campaignRoutes');
-const reportRoutes = require('./reportRoutes');
-const taskRoutes = require('./taskRoutes');
+const authRoutes = require('../services/user-service/routes/authRoutes');
+const userRoutes = require('../services/user-service/routes/userRoutes');
+const campaignRoutes = require('../services/campaign-service/routes/campaignRoutes');
+const reportRoutes = require('../services/campaign-service/routes/reportRoutes');
+const taskRoutes = require('../services/task-service/routes/taskRoutes');
 const cacheRoutes = require('./cacheRoutes');
-const attachmentRoutes = require('./attachmentRoutes');
-const notificationRoutes = require('./notificationRoutes');
-const reminderRoutes = require('./reminderRoutes');
-const logActivityRoutes = require('./logActivityRoutes');
+const attachmentRoutes = require('../services/attachment-service/routes/attachmentRoutes');
+const notificationRoutes = require('../services/notification-service/routes/notificationRoutes');
+const reminderRoutes = require('../services/notification-service/routes/reminderRoutes');
+const logActivityRoutes = require('../services/logactivity-service/routes/logActivityRoutes');
 const calendarRoutes = require('./calendarRoutes');
-const commentRoutes = require('./commentRoutes');
+const commentRoutes = require('../services/comment-service/routes/commentRoutes');
 
 const router = express.Router();
 

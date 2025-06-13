@@ -1,6 +1,7 @@
-const { Campaign, User } = require('../database/models');
-const redis = require('../config/redis');
-const { saveLogActivity } = require('../service/logActivityService');
+const { Campaign } = require('../models/campaign');
+const { UserCache } = require('../models/userCache');
+const redis = require('../../../shared/config/redis');
+const { saveLogActivity } = require('../../../shared/utils/logActivityService');
 
 // Create Campaign
 const postCampaign = async (req, res) => {

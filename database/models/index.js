@@ -1,14 +1,14 @@
-const Auth = require('./auth');
+const Auth = require('../../services/user-service/models/auth');
 const Campaign = require('./campaign');
-const Report = require('./report');
-const Task = require('./task');
+const Report = require('../../services/campaign-service/models/report');
+const Task = require('../../services/task-service/models/task');
 const User = require('./user');
 const Attachment = require('./attachment');
 const Notification = require('./notification');
 const Comment = require('./comment');
 const LogActivity = require('./logActivity');
 const Reminder = require('./reminder');
-const UserCampaign = require('./userCampaign');
+const UserCampaign = require('../../services/campaign-service/models/userCampaign');
 const UserTask = require('./userTask');
 
 // One-to-One: Satu User hanya punya satu Auth

@@ -1,24 +1,23 @@
 {
-  "name": "project_hibiki_point_backend",
+  "name": "notification-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently --names \"USER,CAMPAIGN,COMMENT,TASK,ATTACHMENT,NOTIF,LOG\" --prefix-colors \"cyan,green,yellow,blue,magenta,red,gray\" \"nodemon services/user-service/server.js\" \"nodemon services/campaign-service/server.js\" \"nodemon services/comment-service/server.js\" \"nodemon services/task-service/server.js\" \"nodemon services/attachment-service/server.js\" \"nodemon services/notification-service/server.js\" \"nodemon services/logactivity-service/server.js\""
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "concurrently": "^9.1.2",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "express-slow-down": "^2.0.3",
     "google-auth-library": "^10.0.0",
     "googleapis": "^148.0.0",
-    "http-proxy-middleware": "^3.0.5",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.0",

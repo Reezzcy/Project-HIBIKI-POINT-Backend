@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const calendarController = require('../controller/calendarController');
+const calendarController = require('../services/notification-service/controller/calendarController');
 
 // Define routes for calendar-related operations
 router.get('/login', calendarController.login);

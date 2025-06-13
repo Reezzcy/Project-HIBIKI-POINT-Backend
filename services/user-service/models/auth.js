@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../../shared/config/db');
+const sequelize = require('../../../shared/config/db');
 const User = require('./user');
 
 // Model Auth

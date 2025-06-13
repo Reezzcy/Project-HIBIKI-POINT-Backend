@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../../shared/config/db');
-const User = require('./user');
+const sequelize = require('../../../shared/config/db');
+const User = require('../../../database/models/user');
 const Campaign = require('./campaign');
 
 // Model UserCampaign
