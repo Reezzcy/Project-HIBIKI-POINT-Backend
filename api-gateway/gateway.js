@@ -14,6 +14,9 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware untuk parsing JSON
+app.set('trust proxy', 1);
+
 // Aktifkan CORS untuk semua permintaan
 app.use(cors());
 

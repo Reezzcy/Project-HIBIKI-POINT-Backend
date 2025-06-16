@@ -19,8 +19,8 @@ sequelize
     .catch((err) => console.error('Error syncing database:', err));
 
 // Routing
-server.use('/api/auth', authRoutes);
-server.use('/api', userRoutes);
+server.use('/auth', authRoutes);
+server.use('/user', userRoutes);
 
 // Root
 server.get('/', (req, res) => {

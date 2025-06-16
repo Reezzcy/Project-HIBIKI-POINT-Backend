@@ -21,10 +21,10 @@ sequelize
     .catch((err) => console.error('Error syncing database:', err));
 
 // Routing
-server.use('/api/campaign', campaignRoutes);
-server.use('/api/comment', commentRoutes);
-server.use('/api/report', reportRoutes);
-server.use('/api/task', taskRoutes);
+server.use('/campaign', campaignRoutes);
+server.use('/comment', commentRoutes);
+server.use('/report', reportRoutes);
+server.use('/task', taskRoutes);
 
 // Root
 server.get('/', (req, res) => {
