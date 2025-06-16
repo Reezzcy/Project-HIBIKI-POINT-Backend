@@ -6,7 +6,7 @@ const commentRoutes = require('./src/routes/commentRoutes');
 const reportRoutes = require('./src/routes/reportRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const { connectPublisher } = require('./src/publisher');
-const swaggerSpecs = require('./src/config/swagger');
+const swaggerFile = require('./docs/swagger-output.json');
 
 const server = express();
 const port = process.env.PORT || 3004;
@@ -34,7 +34,7 @@ server.get('/', (req, res) => {
 // Swagger
 server.get('/api-spec.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpecs);
+    res.send(swaggerFile);
 });
 
 // Menjalankan server

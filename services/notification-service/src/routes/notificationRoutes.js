@@ -10,6 +10,6 @@ const { getNotificationsByUserId } = notificationController;
  *   name: Notifications
  *   description: API for managing notifications
  */
-router.get('/notification/:userId', getNotificationsByUserId);
+router.get('/:userId', getNotificationsByUserId);
 
 module.exports = router;

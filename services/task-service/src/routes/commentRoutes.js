@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { extractUserFromHeader } = require('../middleware/extractUser');
 
 const {
     addComment,
@@ -16,7 +17,7 @@ const {
  *   name: Comments
  *   description: API for managing comments on tasks
  */
-router.post('/', addComment);
+router.post('/', extractUserFromHeader, addComment);
 
 /**
  * @swagger

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { extractUserFromHeader } = require('../middleware/extractUser');
 
 const {
     postCampaign,
@@ -24,7 +25,7 @@ const {
  *   name: Campaigns
  *   description: API for managing campaigns
  */
-router.post('/', postCampaign);
+router.post('/', extractUserFromHeader, postCampaign);
 
 /**
  * @swagger
@@ -74,7 +75,7 @@ router.get('/:id', getCampaignById);
  *       200:
  *         description: Updated campaign object
  */
-router.put('/:id', updateCampaign);
+router.put('/:id', extractUserFromHeader, updateCampaign);
 
 /**
  * @swagger
@@ -93,7 +94,7 @@ router.put('/:id', updateCampaign);
  *       200:
  *         description: Campaign deleted successfully
  */
-router.delete('/:id', deleteCampaign);
+router.delete('/:id', extractUserFromHeader, deleteCampaign);
 
 /**
  * @swagger
@@ -187,7 +188,7 @@ router.get('/:id/participants', getCampaignParticipants);
  *       200:
  *         description: A list of campaigns created by the specified creator
  */
-router.get('/creator/:creatorId', getCampaignsByCreator);
+router.get('/creator/:creatorId', extractUserFromHeader, getCampaignsByCreator);
 
 /**
  * @swagger
@@ -206,7 +207,7 @@ router.get('/creator/:creatorId', getCampaignsByCreator);
  *       200:
  *         description: A list of campaigns the specified participant is involved in
  */
-router.get('/participant/:participantId', getCampaignsByParticipant);
+router.get('/participant/:participantId', extractUserFromHeader, getCampaignsByParticipant);
 
 /**
  * @swagger

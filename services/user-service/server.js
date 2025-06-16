@@ -4,7 +4,7 @@ const { sequelize } = require('./src/models');
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const { connectPublisher } = require('./src/publisher');
-const swaggerSpecs = require('./src/config/swagger');
+const swaggerFile = require('./docs/swagger-output.json');
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -30,7 +30,7 @@ server.get('/', (req, res) => {
 // Swagger
 server.get('/api-spec.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpecs);
+    res.send(swaggerFile);
 });
 
 // Menjalankan server

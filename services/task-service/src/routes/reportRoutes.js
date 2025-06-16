@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { extractUserFromHeader } = require('../middleware/extractUser');
 
 const {
     postReport,
@@ -16,7 +17,7 @@ const {
  *   name: Reports
  *   description: API for managing reports in campaigns
  */
-router.post('/', postReport);
+router.post('/', extractUserFromHeader, postReport);
 
 /**
  * @swagger
@@ -85,7 +86,7 @@ router.get('/campaign/:campaign_id', getReportsByCampaignId);
  *       200:
  *         description: The updated report object
  */
-router.put('/:report_id', updateReport);
+router.put('/:report_id', extractUserFromHeader, updateReport);
 
 /**
  * @swagger
@@ -104,6 +105,6 @@ router.put('/:report_id', updateReport);
  *       200:
  *         description: A message confirming the deletion of the report
  */
-router.delete('/:report_id', deleteReport);
+router.delete('/:report_id', extractUserFromHeader, deleteReport);
 
 module.exports = router;

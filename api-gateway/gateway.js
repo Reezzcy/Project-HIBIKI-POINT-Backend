@@ -43,26 +43,21 @@ app.use('/api', apiLimiter);
 // 2. MIDDLEWARE OTENTIKASI (SANG "SATPAM")
 // ===============================================
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-    if (token == null) {
-        return res
-            .status(401)
-            .json({ message: 'Authentication token required' });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res
-                .status(403)
-                .json({ message: 'Invalid or expired token' });
+        if (!token) {
+            return res.status(401).json({ error: 'Token not Found' });
         }
-        // Jika token valid, tambahkan info user ke request
-        // Service internal bisa langsung percaya ini
-        req.user = user;
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        console.log(`Authenticated user: ${req.user}`);
         next();
-    });
+    } catch (error) {
+        return res.status(401).json({ error: 'Token Invalid' });
+    }
 };
 
 // ===============================================
@@ -73,6 +68,7 @@ const fetchSwaggerSpec = async (serviceUrl) => {
     try {
         const response = await fetch(`${serviceUrl}/api-spec.json`);
         if (!response.ok) return null;
+        console.log(`Fetched spec from ${serviceUrl}`);
         return await response.json();
     } catch (error) {
         console.error(`Error fetching spec from ${serviceUrl}:`, error.message);
@@ -86,35 +82,67 @@ app.use('/api-docs', swaggerUi.serve, async (req, res) => {
         // Ambil semua spec dari service yang relevan
         const taskSpec = await fetchSwaggerSpec(process.env.TASK_SERVICE_URL);
         const userSpec = await fetchSwaggerSpec(process.env.USER_SERVICE_URL);
+        const notificationSpec = await fetchSwaggerSpec(process.env.NOTIFICATION_SERVICE_URL);
+        const loggingSpec = await fetchSwaggerSpec(process.env.LOGGING_SERVICE_URL);
 
-        // Definisikan spec dasar untuk Gateway
-        const gatewaySpec = {
-            openapi: '3.0.0',
+        const mergedSpec = {
+            swagger: '2.0',
             info: {
                 title: 'Hibiki Point - Unified API',
                 version: '1.0.0',
-                description:
-                    'Dokumentasi terpusat untuk semua microservice Hibiki Point.',
+                description: 'Dokumentasi terpusat untuk semua microservice Hibiki Point.',
             },
+            host: 'localhost:3004', // ganti sesuai gateway
+            basePath: '/',
+            schemes: ['https'],
             paths: {},
-            components: { schemas: {} },
+            definitions: {},
             tags: [],
         };
 
-        // Gabungkan semua spesifikasi menjadi satu
-        [taskSpec, userSpec].forEach((spec) => {
-            if (spec) {
-                gatewaySpec.paths = { ...gatewaySpec.paths, ...spec.paths };
-                gatewaySpec.components.schemas = {
-                    ...gatewaySpec.components.schemas,
-                    ...spec.components.schemas,
+        // Asumsikan kamu sudah load ini dari file atau HTTP
+        const specs = [userSpec, taskSpec, notificationSpec, loggingSpec];
+
+        specs.forEach((spec) => {
+            if (!spec || typeof spec !== 'object') return;
+
+            // Gabungkan PATHs
+            if (spec.paths) {
+                for (const [path, methods] of Object.entries(spec.paths)) {
+                    if (!mergedSpec.paths[path]) {
+                        mergedSpec.paths[path] = methods;
+                    } else {
+                        // Gabungkan metode (get/post/etc) kalau path-nya sama
+                        mergedSpec.paths[path] = {
+                            ...mergedSpec.paths[path],
+                            ...methods,
+                        };
+                    }
+                }
+            }
+
+            // Gabungkan DEFINITIONS (Swagger 2.0)
+            if (spec.definitions) {
+                mergedSpec.definitions = {
+                    ...mergedSpec.definitions,
+                    ...spec.definitions,
                 };
-                gatewaySpec.tags = [...gatewaySpec.tags, ...spec.tags];
+            }
+
+            // Gabungkan TAGS dengan dedup
+            if (spec.tags && Array.isArray(spec.tags)) {
+                for (const tag of spec.tags) {
+                    if (!mergedSpec.tags.some((t) => t.name === tag.name)) {
+                        mergedSpec.tags.push(tag);
+                    }
+                }
             }
         });
 
+        console.log(`gatewaySpec ${mergedSpec}`);
+
         // Sajikan UI dengan spesifikasi yang sudah digabung
-        const swaggerUiHandler = swaggerUi.setup(gatewaySpec);
+        const swaggerUiHandler = swaggerUi.setup(mergedSpec);
         swaggerUiHandler(req, res);
     } catch (error) {
         res.status(500).send('Unable to load API specs');
@@ -140,6 +168,25 @@ const proxyOptions = {
     pathRewrite: { '^/api': '' },
 };
 
+const createServiceProxy = (target) => {
+    return createProxyMiddleware({
+        target,
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' },
+        onProxyReq: (proxyReq, req, res) => {
+            // Meneruskan data user sebagai header jika tersedia
+            if (req.user) {
+                // Untuk debugging
+                console.log('Forwarding user data:', JSON.stringify(req.user));
+
+                // Encode data user sebagai base64 string
+                const userDataString = JSON.stringify(req.user);
+                proxyReq.setHeader('X-User-Data', Buffer.from(userDataString).toString('base64'));
+            }
+        }
+    });
+};
+
 // Rute Publik (tidak perlu token)
 app.use(
     '/api/auth',
@@ -150,41 +197,41 @@ app.use(
 // Rute yang Membutuhkan Otentikasi
 // Perhatikan penggunaan middleware `authenticateToken` sebelum proxy
 app.use(
-    '/api/users',
+    '/api/user',
     authenticateToken,
     createProxyMiddleware({ target: USER_SERVICE_URL, ...proxyOptions })
 );
 
 // Semua rute produktivitas diarahkan ke Task Service
 app.use(
-    '/api/tasks',
+    '/api/task',
+    authenticateToken,
+    createServiceProxy(TASK_SERVICE_URL)
+);
+app.use(
+    '/api/campaign',
+    authenticateToken,
+    createServiceProxy(TASK_SERVICE_URL)
+);
+app.use(
+    '/api/comment',
+    authenticateToken,
+    createServiceProxy(TASK_SERVICE_URL)
+);
+app.use(
+    '/api/reminder',
     authenticateToken,
     createProxyMiddleware({ target: TASK_SERVICE_URL, ...proxyOptions })
 );
 app.use(
-    '/api/campaigns',
+    '/api/attachment',
     authenticateToken,
     createProxyMiddleware({ target: TASK_SERVICE_URL, ...proxyOptions })
 );
 app.use(
-    '/api/comments',
+    '/api/report',
     authenticateToken,
-    createProxyMiddleware({ target: TASK_SERVICE_URL, ...proxyOptions })
-);
-app.use(
-    '/api/reminders',
-    authenticateToken,
-    createProxyMiddleware({ target: TASK_SERVICE_URL, ...proxyOptions })
-);
-app.use(
-    '/api/attachments',
-    authenticateToken,
-    createProxyMiddleware({ target: TASK_SERVICE_URL, ...proxyOptions })
-);
-app.use(
-    '/api/reports',
-    authenticateToken,
-    createProxyMiddleware({ target: TASK_SERVICE_URL, ...proxyOptions })
+    createServiceProxy(TASK_SERVICE_URL)
 );
 app.use(
     '/api/calendar',
@@ -194,7 +241,7 @@ app.use(
 
 // Rute untuk service pendukung (jika perlu diakses dari luar)
 app.use(
-    '/api/notifications',
+    '/api/notification',
     authenticateToken,
     createProxyMiddleware({ target: NOTIFICATION_SERVICE_URL, ...proxyOptions })
 );
@@ -212,3 +259,7 @@ app.get('/', (req, res) => res.send('API Gateway is running.'));
 app.listen(PORT, () => {
     console.log(`API Gateway listening on port ${PORT}`);
 });
+
+module.exports = {
+    authenticateToken
+}; // Ekspor app untuk testing atau penggunaan lain
