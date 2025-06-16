@@ -20,7 +20,7 @@ sequelize
 server.use(express.json());
 
 // Routing
-server.use('/api', notificationRoutes);
+server.use('/notification', notificationRoutes);
 
 // Root
 server.get('/', (req, res) => {

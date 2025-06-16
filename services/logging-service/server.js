@@ -19,7 +19,7 @@ sequelize
 server.use(express.json());
 
 // Routing
-server.use('/api', logRoutes);
+server.use('/logs', logRoutes);
 
 // Root
 server.get('/', (req, res) => {
