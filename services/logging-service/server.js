@@ -3,7 +3,7 @@ const express = require('express');
 const { startConsumer } = require('./src/consumer');
 const { sequelize } = require('./src/models/logActivity');
 const logRoutes = require('./src/routes/logActivityRoutes');
-const swaggerSpecs = require('./src/config/swagger');
+const swaggerFile = require('./docs/swagger-output.json');
 const server = express();
 const port = process.env.PORT || 3002;
 
@@ -29,7 +29,7 @@ server.get('/', (req, res) => {
 // Swagger
 server.get('/api-spec.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpecs);
+    res.send(swaggerFile);
 });
 
 server.listen(port, async () => {

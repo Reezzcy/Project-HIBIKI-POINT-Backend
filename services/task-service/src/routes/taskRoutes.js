@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { extractUserFromHeader } = require('../middleware/extractUser');
 
 const {
     postTask,
@@ -19,7 +20,7 @@ const {
  *   name: Tasks
  *   description: API for managing tasks in campaigns
  */
-router.post('/', postTask);
+router.post('/', extractUserFromHeader, postTask);
 
 /**
  * @swagger
@@ -88,7 +89,7 @@ router.get('/campaign/:campaign_id', getTasksByCampaignId);
  *       200:
  *         description: The updated task object
  */
-router.put('/:task_id', updateTask);
+router.put('/:task_id', extractUserFromHeader, updateTask);
 
 /**
  * @swagger
@@ -107,7 +108,7 @@ router.put('/:task_id', updateTask);
  *       200:
  *         description: A message confirming deletion
  */
-router.delete('/:task_id', deleteTask);
+router.delete('/:task_id', extractUserFromHeader, deleteTask);
 
 /**
  * @swagger
