@@ -88,8 +88,7 @@ const getAllReports = async (req, res) => {
             include: [
                 {
                     model: Campaign,
-                    as: 'campaign',
-                    attributes: ['campaign_id', 'name'],
+                    attributes: ['campaign_id', 'title'],
                 },
             ],
         });
@@ -107,8 +106,7 @@ const getReportById = async (req, res) => {
             include: [
                 {
                     model: Campaign,
-                    as: 'campaign',
-                    attributes: ['campaign_id', 'name'],
+                    attributes: ['campaign_id', 'title'],
                 },
             ],
         });

@@ -62,8 +62,8 @@ const getAllTasks = async (req, res) => {
 // Mendapatkan task by ID
 const getTaskById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const task = await Task.findByPk(id, {
+        const { task_id } = req.params;
+        const task = await Task.findByPk(task_id, {
             // Kita bisa join ke Campaign karena berada di service yang sama
             include: [{ model: Campaign, attributes: ['title'] }],
         });
@@ -78,10 +78,10 @@ const getTaskById = async (req, res) => {
 // Update Task (contoh spesifik untuk status)
 const updateTask = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { task_id } = req.params;
         const updaterId = req.user.id;
 
-        const task = await Task.findByPk(id);
+        const task = await Task.findByPk(task_id);
         if (!task) return res.status(404).json({ message: 'Task not found' });
 
         const oldStatus = task.status;
@@ -110,13 +110,11 @@ const updateTask = async (req, res) => {
 // Delete Task
 const deleteTask = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { task_id } = req.params;
         const deleterId = req.user.id;
 
-        const task = await Task.findByPk(id);
+        const task = await Task.findByPk(task_id);
         if (!task) return res.status(404).json({ message: 'Task not found' });
-
-        await task.destroy();
 
         publishEvent('task.deleted', {
             taskId: id,
@@ -124,6 +122,8 @@ const deleteTask = async (req, res) => {
             deletedBy: deleterId,
         });
 
+        await task.destroy();
+        
         res.status(200).json({ message: 'Task deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
