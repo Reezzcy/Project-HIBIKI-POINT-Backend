@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
 const fetch = require('node-fetch');
+const slowDown = require('express-slow-down');
 
 // ===============================================
 // 1. PENGATURAN DASAR & MIDDLEWARE KEAMANAN
@@ -34,6 +35,13 @@ const loginLimiter = rateLimit({
     message: 'Too many login attempts, please try again after 15 minutes',
     standardHeaders: true,
     legacyHeaders: false,
+});
+
+const apiThrottle = slowDown({
+    windowMs: 15 * 60 * 1000,
+    delayAfter: 5,
+    delayMs: 500,
+    message: 'terlalu banyak percobaan permintaan'
 });
 
 // Terapkan limiter dasar ke semua rute /api
@@ -191,6 +199,7 @@ const createServiceProxy = (target) => {
 app.use(
     '/api/auth',
     loginLimiter,
+    apiThrottle,
     createProxyMiddleware({ target: USER_SERVICE_URL, ...proxyOptions })
 );
 
