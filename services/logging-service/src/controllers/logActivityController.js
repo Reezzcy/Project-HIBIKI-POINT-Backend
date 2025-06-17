@@ -48,7 +48,7 @@ const getLogActivity = async (req, res) => {
 
         const logActivities = await LogActivity.findAll({
             where: whereClause,
-            order: [['created_at', 'DESC']],
+            order: [['createdAt', 'DESC']],
         });
 
         if (logActivities.length === 0) {
@@ -87,7 +87,7 @@ const getLogActivityById = async (req, res) => {
         const { id } = req.params;
 
         const logActivity = await LogActivity.findOne({
-            where: { log_activity_id: id },
+            where: { log_id: id },
         });
 
         if (!logActivity) {
@@ -103,7 +103,7 @@ const getLogActivityById = async (req, res) => {
 const getAllLogActivities = async (req, res) => {
     try {
         const logActivities = await LogActivity.findAll({
-            order: [['created_at', 'DESC']],
+            order: [['createdAt', 'DESC']],
         });
 
         if (logActivities.length === 0) {
