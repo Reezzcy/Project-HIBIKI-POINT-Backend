@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
 const User = sequelize.define(
@@ -18,6 +18,11 @@ const User = sequelize.define(
             type: DataTypes.ENUM(['Active', 'Inactive']),
             allowNull: false,
             defaultValue: 'Active',
+        },
+        role: {
+            type: DataTypes.ENUM('user', 'admin'),
+            allowNull: false,
+            defaultValue: 'user',
         },
         avatar_base64: {
             type: DataTypes.TEXT('long'),

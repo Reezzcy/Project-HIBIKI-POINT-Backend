@@ -96,7 +96,7 @@ const login = async (req, res, next) => {
 
         const auth = await Auth.findOne({
             where: { email },
-            include: { model: User, as: 'User', attributes: ['name'] },
+            include: { model: User, as: 'User', attributes: ['name', 'role'] },
         });
 
         if (!auth) {
@@ -263,10 +263,11 @@ const googleLogin = async (req, res) => {
             id: auth.user_id,
             email: auth.email,
             name: auth.User.name,
+            role: auth.User.role,
         };
 
         const appToken = jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRED || '1d',
+            expiresIn: process.env.JWT_EXPIRED || '1h',
         });
 
         res.status(200).json({
