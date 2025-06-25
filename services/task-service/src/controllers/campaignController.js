@@ -1,5 +1,6 @@
 const { Campaign, UserCampaign, Task } = require('../models');
 const { publishEvent } = require('../publisher');
+const { Op } = require('sequelize'); // Import Op for date comparisons
 
 // Membuat campaign baru
 const postCampaign = async (req, res) => {
@@ -34,16 +35,35 @@ const postCampaign = async (req, res) => {
         await UserCampaign.bulkCreate(participantEntries);
 
         // Terbitkan Event
-        publishEvent('campaign.created', {
-            campaignId: newCampaign.campaign_id,
-            title: newCampaign.title,
-            creatorId: creatorId,
-            participantIds: allParticipantIds,
-        });
+        // Ensure publishEvent is defined and accessible in this scope
+        // If publishEvent is not globally available, you might need to import it.
+        if (typeof publishEvent === 'function') {
+            publishEvent('campaign.created', {
+                campaignId: newCampaign.campaign_id,
+                title: newCampaign.title,
+                creatorId: creatorId,
+                participantIds: allParticipantIds,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+            // Handle cases where publishEvent might not be available
+        }
 
-        res.status(201).json(newCampaign);
+        // Successful response in the desired format
+        res.status(201).json({
+            status: 'success',
+            message: 'Campaign created successfully.',
+            data: newCampaign, // The newly created campaign object
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        // Error response in the desired format
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to create campaign.',
+            data: {
+                details: error.message, // Provide error details for debugging
+            },
+        });
     }
 };
 
@@ -54,9 +74,17 @@ const getAllCampaigns = async (req, res) => {
         const campaigns = await Campaign.findAll({
             include: [{ model: Task }], // Boleh join ke tabel lain di service yang sama
         });
-        res.status(200).json(campaigns);
+        res.status(200).json({
+            status: 'success',
+            message: 'All campaigns retrieved successfully.',
+            data: campaigns,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve campaigns.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -70,11 +98,23 @@ const getCampaignById = async (req, res) => {
         });
 
         if (!campaign) {
-            return res.status(404).json({ message: 'Campaign not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Campaign not found.',
+                data: null,
+            });
         }
-        res.status(200).json(campaign);
+        res.status(200).json({
+            status: 'success',
+            message: 'Campaign retrieved successfully.',
+            data: campaign,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve campaign.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -86,21 +126,37 @@ const updateCampaign = async (req, res) => {
 
         const campaign = await Campaign.findByPk(id);
         if (!campaign) {
-            return res.status(404).json({ message: 'Campaign not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Campaign not found.',
+                data: null,
+            });
         }
 
         await campaign.update(req.body);
 
         // Terbitkan Event
-        publishEvent('campaign.updated', {
-            campaignId: campaign.campaign_id,
-            updatedBy: updaterId,
-            changes: req.body,
-        });
+        if (typeof publishEvent === 'function') {
+            publishEvent('campaign.updated', {
+                campaignId: campaign.campaign_id,
+                updatedBy: updaterId,
+                changes: req.body,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json(campaign);
+        res.status(200).json({
+            status: 'success',
+            message: 'Campaign updated successfully.',
+            data: campaign,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to update campaign.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -112,20 +168,36 @@ const deleteCampaign = async (req, res) => {
 
         const campaign = await Campaign.findByPk(id);
         if (!campaign) {
-            return res.status(404).json({ message: 'Campaign not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Campaign not found.',
+                data: null,
+            });
         }
 
         await campaign.destroy();
 
         // Terbitkan Event
-        publishEvent('campaign.deleted', {
-            campaignId: id,
-            deletedBy: deleterId,
-        });
+        if (typeof publishEvent === 'function') {
+            publishEvent('campaign.deleted', {
+                campaignId: id,
+                deletedBy: deleterId,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json({ message: 'Campaign deleted successfully' });
+        res.status(200).json({
+            status: 'success',
+            message: 'Campaign deleted successfully.',
+            data: null, // No specific data to return on delete success
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to delete campaign.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -137,7 +209,11 @@ const addParticipantToCampaign = async (req, res) => {
 
         const campaign = await Campaign.findByPk(id);
         if (!campaign) {
-            return res.status(404).json({ message: 'Campaign not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Campaign not found.',
+                data: null,
+            });
         }
 
         // Cek apakah user sudah menjadi partisipan
@@ -145,9 +221,11 @@ const addParticipantToCampaign = async (req, res) => {
             where: { campaign_id: id, user_id: userId },
         });
         if (existingParticipant) {
-            return res
-                .status(400)
-                .json({ message: 'User already a participant' });
+            return res.status(400).json({
+                status: 'fail',
+                message: 'User already a participant in this campaign.',
+                data: null,
+            });
         }
 
         // Tambahkan partisipan baru
@@ -157,14 +235,26 @@ const addParticipantToCampaign = async (req, res) => {
         });
 
         // Terbitkan Event
-        publishEvent('campaign.participant.added', {
-            campaignId: id,
-            userId: userId,
-        });
+        if (typeof publishEvent === 'function') {
+            publishEvent('campaign.participant.added', {
+                campaignId: id,
+                userId: userId,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json({ message: 'Participant added successfully' });
+        res.status(200).json({
+            status: 'success',
+            message: 'Participant added successfully.',
+            data: { campaign_id: id, user_id: userId },
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to add participant to campaign.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -176,7 +266,11 @@ const removeParticipantFromCampaign = async (req, res) => {
 
         const campaign = await Campaign.findByPk(id);
         if (!campaign) {
-            return res.status(404).json({ message: 'Campaign not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Campaign not found.',
+                data: null,
+            });
         }
 
         // Cek apakah user adalah partisipan
@@ -184,21 +278,37 @@ const removeParticipantFromCampaign = async (req, res) => {
             where: { campaign_id: id, user_id: userId },
         });
         if (!participant) {
-            return res.status(404).json({ message: 'Participant not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Participant not found in this campaign.',
+                data: null,
+            });
         }
 
         // Hapus partisipan
         await participant.destroy();
 
         // Terbitkan Event
-        publishEvent('campaign.participant.removed', {
-            campaignId: id,
-            userId: userId,
-        });
+        if (typeof publishEvent === 'function') {
+            publishEvent('campaign.participant.removed', {
+                campaignId: id,
+                userId: userId,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json({ message: 'Participant removed successfully' });
+        res.status(200).json({
+            status: 'success',
+            message: 'Participant removed successfully.',
+            data: { campaign_id: id, user_id: userId },
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to remove participant from campaign.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -212,15 +322,27 @@ const getCampaignParticipants = async (req, res) => {
         });
 
         if (!campaign) {
-            return res.status(404).json({ message: 'Campaign not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Campaign not found.',
+                data: null,
+            });
         }
 
         // Ambil daftar ID partisipan
         const participantIds = campaign.UserCampaigns.map((uc) => uc.user_id);
 
-        res.status(200).json(participantIds);
+        res.status(200).json({
+            status: 'success',
+            message: 'Campaign participants retrieved successfully.',
+            data: participantIds,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve campaign participants.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -232,9 +354,17 @@ const getCampaignsByCreator = async (req, res) => {
             where: { user_id: creatorId },
             include: [{ model: Task }], // Boleh join ke tabel lain di service yang sama
         });
-        res.status(200).json(campaigns);
+        res.status(200).json({
+            status: 'success',
+            message: 'Campaigns by creator retrieved successfully.',
+            data: campaigns,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve campaigns by creator.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -252,9 +382,17 @@ const getCampaignsByParticipant = async (req, res) => {
             ],
             attributes: { exclude: ['user_id'] }, // Exclude creator ID
         });
-        res.status(200).json(campaigns);
+        res.status(200).json({
+            status: 'success',
+            message: 'Campaigns by participant retrieved successfully.',
+            data: campaigns,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve campaigns by participant.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -266,9 +404,17 @@ const getCampaignsByStatus = async (req, res) => {
             where: { status },
             include: [{ model: Task }], // Boleh join ke tabel lain di service yang sama
         });
-        res.status(200).json(campaigns);
+        res.status(200).json({
+            status: 'success',
+            message: `Campaigns with status '${status}' retrieved successfully.`,
+            data: campaigns,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve campaigns by status.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -283,9 +429,17 @@ const getOngoingCampaigns = async (req, res) => {
             },
             include: [{ model: Task }], // Boleh join ke tabel lain di service yang sama
         });
-        res.status(200).json(campaigns);
+        res.status(200).json({
+            status: 'success',
+            message: 'Ongoing campaigns retrieved successfully.',
+            data: campaigns,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve ongoing campaigns.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -299,9 +453,17 @@ const getCompletedCampaigns = async (req, res) => {
             },
             include: [{ model: Task }], // Boleh join ke tabel lain di service yang sama
         });
-        res.status(200).json(campaigns);
+        res.status(200).json({
+            status: 'success',
+            message: 'Completed campaigns retrieved successfully.',
+            data: campaigns,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve completed campaigns.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -315,9 +477,17 @@ const getUpcomingCampaigns = async (req, res) => {
             },
             include: [{ model: Task }], // Boleh join ke tabel lain di service yang sama
         });
-        res.status(200).json(campaigns);
+        res.status(200).json({
+            status: 'success',
+            message: 'Upcoming campaigns retrieved successfully.',
+            data: campaigns,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve upcoming campaigns.',
+            data: { details: error.message },
+        });
     }
 };
 

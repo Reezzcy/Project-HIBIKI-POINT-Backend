@@ -10,7 +10,14 @@ const addComment = async (req, res) => {
             // Ambil ID semua partisipan tugas untuk notifikasi
             include: [{ model: UserTask, attributes: ['user_id'] }],
         });
-        if (!task) return res.status(404).json({ message: 'Task not found' });
+
+        if (!task) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Task not found.',
+                data: null,
+            });
+        }
 
         const newComment = await Comment.create({
             task_id,
@@ -27,18 +34,32 @@ const addComment = async (req, res) => {
         ];
 
         // Terbitkan Event
-        publishEvent('comment.added', {
-            commentId: newComment.comment_id,
-            taskId: task_id,
-            taskTitle: task.title,
-            commenterId: commenterId,
-            commentText: comment_text,
-            notifyUserIds: allInvolvedIds.filter((id) => id !== commenterId),
-        });
+        if (typeof publishEvent === 'function') {
+            publishEvent('comment.added', {
+                commentId: newComment.comment_id,
+                taskId: task_id,
+                taskTitle: task.title,
+                commenterId: commenterId,
+                commentText: comment_text,
+                notifyUserIds: allInvolvedIds.filter(
+                    (id) => id !== commenterId
+                ),
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(201).json(newComment);
+        res.status(201).json({
+            status: 'success',
+            message: 'Comment added successfully.',
+            data: newComment,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to add comment.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -46,9 +67,26 @@ const getCommentsByTaskId = async (req, res) => {
     try {
         const { task_id } = req.params;
         const comments = await Comment.findAll({ where: { task_id } });
-        res.status(200).json(comments);
+
+        if (!comments || comments.length === 0) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'No comments found for this task.',
+                data: null,
+            });
+        }
+
+        res.status(200).json({
+            status: 'success',
+            message: `Comments for task ID ${task_id} retrieved successfully.`,
+            data: comments,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve comments for the task.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -58,22 +96,39 @@ const updateComment = async (req, res) => {
         const { comment_text } = req.body;
 
         const comment = await Comment.findByPk(comment_id);
-        if (!comment)
-            return res.status(404).json({ message: 'Comment not found' });
+        if (!comment) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Comment not found.',
+                data: null,
+            });
+        }
 
         // Update komentar
         comment.comment_text = comment_text;
         await comment.save();
 
         // Terbitkan Event
-        publishEvent('comment.updated', {
-            commentId: comment_id,
-            updatedText: comment_text,
-        });
+        if (typeof publishEvent === 'function') {
+            publishEvent('comment.updated', {
+                commentId: comment_id,
+                updatedText: comment_text,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json(comment);
+        res.status(200).json({
+            status: 'success',
+            message: 'Comment updated successfully.',
+            data: comment,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to update comment.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -82,20 +137,37 @@ const deleteComment = async (req, res) => {
         const { comment_id } = req.params;
 
         const comment = await Comment.findByPk(comment_id);
-        if (!comment)
-            return res.status(404).json({ message: 'Comment not found' });
+        if (!comment) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Comment not found.',
+                data: null,
+            });
+        }
 
         // Hapus komentar
         await comment.destroy();
 
         // Terbitkan Event
-        publishEvent('comment.deleted', {
-            commentId: comment_id,
-        });
+        if (typeof publishEvent === 'function') {
+            publishEvent('comment.deleted', {
+                commentId: comment_id,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json({ message: 'Comment deleted successfully' });
+        res.status(200).json({
+            status: 'success',
+            message: 'Comment deleted successfully.',
+            data: null, // No specific data to return on delete success
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to delete comment.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -104,21 +176,42 @@ const getCommentById = async (req, res) => {
         const { comment_id } = req.params;
 
         const comment = await Comment.findByPk(comment_id);
-        if (!comment)
-            return res.status(404).json({ message: 'Comment not found' });
+        if (!comment) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Comment not found.',
+                data: null,
+            });
+        }
 
-        res.status(200).json(comment);
+        res.status(200).json({
+            status: 'success',
+            message: 'Comment retrieved successfully.',
+            data: comment,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve comment.',
+            data: { details: error.message },
+        });
     }
 };
 
 const getAllComments = async (req, res) => {
     try {
         const comments = await Comment.findAll();
-        res.status(200).json(comments);
+        res.status(200).json({
+            status: 'success',
+            message: 'All comments retrieved successfully.',
+            data: comments,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve all comments.',
+            data: { details: error.message },
+        });
     }
 };
 

@@ -13,15 +13,28 @@ const postReport = async (req, res) => {
             report_date,
         });
 
-        publishEvent('report.created', {
-            reportId: newReport.report_id,
-            campaignId: campaign_id,
-            creatorId: creatorId,
-        });
+        // Terbitkan Event
+        if (typeof publishEvent === 'function') {
+            publishEvent('report.created', {
+                reportId: newReport.report_id,
+                campaignId: campaign_id,
+                creatorId: creatorId,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(201).json(newReport);
+        res.status(201).json({
+            status: 'success',
+            message: 'Report created successfully.',
+            data: newReport,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to create report.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -29,9 +42,26 @@ const getReportsByCampaignId = async (req, res) => {
     try {
         const { campaign_id } = req.params;
         const reports = await Report.findAll({ where: { campaign_id } });
-        res.status(200).json(reports);
+
+        if (!reports || reports.length === 0) {
+            return res.status(404).json({
+                status: 'fail',
+                message: `No reports found for campaign ID ${campaign_id}.`,
+                data: null,
+            });
+        }
+
+        res.status(200).json({
+            status: 'success',
+            message: `Reports for campaign ID ${campaign_id} retrieved successfully.`,
+            data: reports,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve reports by campaign ID.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -42,20 +72,37 @@ const updateReport = async (req, res) => {
 
         const report = await Report.findByPk(report_id);
         if (!report) {
-            return res.status(404).json({ message: 'Report not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Report not found.',
+                data: null,
+            });
         }
 
         await report.update(req.body);
 
-        publishEvent('report.updated', {
-            reportId: report_id,
-            updatedBy: updaterId,
-            changes: req.body,
-        });
+        // Terbitkan Event
+        if (typeof publishEvent === 'function') {
+            publishEvent('report.updated', {
+                reportId: report_id,
+                updatedBy: updaterId,
+                changes: req.body,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json(report);
+        res.status(200).json({
+            status: 'success',
+            message: 'Report updated successfully.',
+            data: report,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to update report.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -66,19 +113,36 @@ const deleteReport = async (req, res) => {
 
         const report = await Report.findByPk(report_id);
         if (!report) {
-            return res.status(404).json({ message: 'Report not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Report not found.',
+                data: null,
+            });
         }
 
         await report.destroy();
 
-        publishEvent('report.deleted', {
-            reportId: report_id,
-            deletedBy: deleterId,
-        });
+        // Terbitkan Event
+        if (typeof publishEvent === 'function') {
+            publishEvent('report.deleted', {
+                reportId: report_id,
+                deletedBy: deleterId,
+            });
+        } else {
+            console.warn('publishEvent function is not defined.');
+        }
 
-        res.status(200).json({ message: 'Report deleted successfully' });
+        res.status(200).json({
+            status: 'success',
+            message: 'Report deleted successfully.',
+            data: null, // No specific data to return on delete success
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to delete report.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -92,9 +156,17 @@ const getAllReports = async (req, res) => {
                 },
             ],
         });
-        res.status(200).json(reports);
+        res.status(200).json({
+            status: 'success',
+            message: 'All reports retrieved successfully.',
+            data: reports,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve all reports.',
+            data: { details: error.message },
+        });
     }
 };
 
@@ -112,12 +184,24 @@ const getReportById = async (req, res) => {
         });
 
         if (!report) {
-            return res.status(404).json({ message: 'Report not found' });
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Report not found.',
+                data: null,
+            });
         }
 
-        res.status(200).json(report);
+        res.status(200).json({
+            status: 'success',
+            message: 'Report retrieved successfully.',
+            data: report,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to retrieve report.',
+            data: { details: error.message },
+        });
     }
 };
 
