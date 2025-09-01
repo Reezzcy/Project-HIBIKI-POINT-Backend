@@ -1,5 +1,7 @@
 # Campaign Planner - HIBIKI POINT
 
+![CI](https://github.com/Reezzcy/Project-HIBIKI-POINT-Backend/actions/workflows/ci.yml/badge.svg)
+
 Kelompok 8
 
 1. 2210511057 - Nicolas Debrito
@@ -8,19 +10,20 @@ Kelompok 8
 4. 2210511083 - Muhammad Alif Alfattah Riu
 5. 2210511093 - Dini Rahmawati
 
-# HIBIKI POINT
+## HIBIKI POINT
 
 Hibiki Point terinspirasi dari dua kata yang penuh makna: Hibiki (響き) dan Point. Dalam bahasa Jepang, Hibiki berarti "resonansi" atau "dampak", menggambarkan bagaimana sesuatu dapat menciptakan gelombang pengaruh yang luas. Sementara itu, Point merujuk pada "titik" atau "fokus", yang melambangkan ketepatan, tujuan, dan arah. Sebagai aplikasi campaign planner, Hibiki Point hadir untuk membantu Anda merancang strategi kampanye yang tidak hanya terstruktur, tetapi juga mampu menciptakan resonansi yang kuat di tengah audiens. Dengan tools yang mudah digunakan, Anda dapat menetapkan tujuan, menyusun strategi, dan melacak hasil kampanye secara terstruktur. Tujuannya adalah memastikan setiap langkah yang Anda ambil tepat sasaran dan memberikan dampak yang berarti bagi audiens Anda. Hibiki Point akan tersedia sebagai aplikasi mobile yang dapat diakses dengan mudah di perangkat Android dan iOS.
 
-# Arsitektur Sistem
+## Arsitektur Sistem
+
 ![Topologi](https://github.com/user-attachments/assets/0467851f-bb43-4866-b343-c6d3805db35a)
 ![Sequence](https://github.com/user-attachments/assets/c60039ab-0f33-45f1-b07a-b144ad6bc258)
 
-# Frontend
+## Frontend
 
 Aplikasi ini dikembangkan menggunakan Dart, bahasa pemrograman yang menjadi dasar dari framework Flutter. Dengan Flutter, Hibiki Point diharapkan bisa menawarkan antarmuka yang responsif, performa yang optimal, serta kemudahan dalam pengembangan untuk kedua platform secara bersamaan. Hal ini memastikan Anda dapat merencanakan dan mengelola kampanye mereka kapan saja dan di mana saja dengan pengalaman yang lancar dan konsisten.
 
-# Backend
+## Backend
 
 Untuk sisi backend, Hibiki Point dibangun menggunakan JavaScript dengan runtime Node.js dan framework Express.js sebagai modul utamanya. Dengan kombinasi ini, diharapkan pengembangan dapat lebih cepat dan skalabel, serta mampu menangani berbagai kebutuhan API dengan efisien. Node.js memungkinkan aplikasi untuk berjalan dengan performa tinggi berkat model event-driven dan non-blocking I/O-nya, sementara Express.js menyederhanakan pembuatan endpoint API dengan routing yang fleksibel dan middleware yang powerful. Selain itu, ekosistem npm (Node Package Manager) yang kaya akan library dan tools memastikan proses pengembangan menjadi lebih produktif.
 
@@ -57,3 +60,13 @@ docker-compose up --build
 ```
 
 Important: Ensure no ports are currently in use on 3001, 3002, 3003, and 3004 before running docker-compose up. If any of these ports are occupied, services might fail to start. You can check occupied ports using commands like netstat -tuln (Linux) or lsof -iTCP -sTCP:LISTEN (macOS).
+
+## CI/CD
+
+This repository includes a GitHub Actions workflow at `.github/workflows/ci.yml` that runs on pushes and pull requests to `main`:
+
+- Installs Node.js dependencies for each service and the API gateway using `npm ci`.
+- Validates the `docker-compose.yml` configuration.
+- Builds Docker images for the API gateway and all services to ensure Dockerfiles remain valid.
+
+Pushes to container registries are not enabled by default. If you want to publish images, add registry credentials as GitHub Secrets and extend the workflow with a login and `push: true`.
