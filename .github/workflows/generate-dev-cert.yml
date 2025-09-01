@@ -1,0 +1,66 @@
+name: Generate Dev SSL Certificate
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "Common Name (CN) for the certificate"
+        required: true
+        default: "localhost"
+      days:
+        description: "Validity in days"
+        required: true
+        default: "30"
+  schedule:
+    - cron: '0 0 1 * *'
+
+permissions:
+  contents: read
+
+jobs:
+  generate-cert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare output directory
+        run: |
+          mkdir -p nginx/ssl
+
+      - name: Generate self-signed certificate (OpenSSL 3)
+        shell: bash
+        run: |
+          set -euo pipefail
+          DOMAIN="${{ github.event.inputs.domain }}"
+          DAYS="${{ github.event.inputs.days }}"
+          # Generate key + cert with SANs for localhost and loopback IPs
+          openssl req -x509 -newkey rsa:2048 -sha256 -days "$DAYS" -nodes \
+            -keyout nginx/ssl/private.key \
+            -out nginx/ssl/certificate.crt \
+            -subj "/C=ID/ST=Jakarta/L=Jakarta/O=Hibiki/OU=CI/CN=$DOMAIN" \
+            -addext "subjectAltName=DNS:$DOMAIN,DNS:localhost,IP:127.0.0.1,IP:::1"
+
+          # Display brief info (no key material)
+          echo "Generated certificate info:"
+          openssl x509 -in nginx/ssl/certificate.crt -noout -issuer -subject -dates -ext subjectAltName || true
+
+      - name: Upload certificate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-ssl-${{ github.run_id }}
+          path: |
+            nginx/ssl/certificate.crt
+            nginx/ssl/private.key
+          if-no-files-found: error
+
+      - name: Commit certificate files to repo
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions
+          author_email: github-actions@users.noreply.github.com
+          message: "Add dev SSL certificate"
+          add: |
+            nginx/ssl/certificate.crt
+            nginx/ssl/private.key
+          push: true
